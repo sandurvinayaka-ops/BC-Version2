@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Optimized</title>
+    <title>Birth Pulse 2025 - Smooth</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         :root {
@@ -39,7 +39,6 @@
             align-items: center; justify-content: space-between; 
         }
 
-        /* STATS PANEL */
         .stats-panel { 
             padding-left: 50px; width: 350px; z-index: 20; 
             display: flex; flex-direction: column; justify-content: center;
@@ -58,18 +57,19 @@
         .clock-wrapper { position: absolute; top: 12px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
         #clock { color: var(--deep-orange); font-size: 0.9rem; font-weight: bold; font-variant-numeric: tabular-nums; }
 
-        /* GLOBE PANEL */
         .globe-panel { 
             flex: 1; height: 100%; position: relative; 
             display: flex; align-items: center; justify-content: flex-end; 
             overflow: hidden;
             background: radial-gradient(circle at center, #0a1424 0%, #050a12 70%);
+            /* MOVE EARTH 1CM (approx 40px) TO THE RIGHT */
+            transform: translateX(40px);
         }
         
         #globeViz { width: 100%; height: 100%; }
 
         #loading-overlay {
-            position: absolute; top: 50%; left: 60%; transform: translate(-50%, -50%);
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             z-index: 2000; color: var(--map-blue);
@@ -95,71 +95,60 @@
         <div class="globe-panel">
             <div id="loading-overlay">
                 <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">INITIALIZING</div>
-                <div id="loading-text" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Loading Low-Poly Data...</div>
+                <div id="loading-text" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Loading Global Data...</div>
             </div>
             <div id="globeViz"></div>
         </div>
     </div>
 
     <script>
-        // --- CONSTANTS ---
         const countryShares = {
             IND: 18.29, CHN: 17.69, USA: 4.34, IDN: 3.57, PAK: 3.19, NGA: 2.97, BRA: 2.66, BGD: 2.19, RUS: 1.80, ETH: 1.69, MEX: 1.65, JPN: 1.54, EGY: 1.48, PHL: 1.46, COD: 1.41, VNM: 1.27, IRN: 1.15, TUR: 1.10, DEU: 1.05, THA: 0.89, TZA: 0.88, GBR: 0.87, FRA: 0.83, ZAF: 0.81, ITA: 0.74, KEN: 0.72, MMR: 0.69, COL: 0.67, KOR: 0.65, SDN: 0.65, UGA: 0.64, ESP: 0.60, DZA: 0.59, IRQ: 0.59, ARG: 0.57, AFG: 0.55, YEM: 0.52, CAN: 0.50, AGO: 0.49, UKR: 0.49, MAR: 0.48, POL: 0.48, UZB: 0.46, MYS: 0.45, MOZ: 0.45, GHA: 0.44, PER: 0.43, SAU: 0.43, MDG: 0.41, CIV: 0.41, CMR: 0.37, NPL: 0.37, VEN: 0.36, NER: 0.35, AUS: 0.34, PRK: 0.33, SYR: 0.32, MLI: 0.31, BFA: 0.30, MWI: 0.28, ZMB: 0.27, TCD: 0.26, KAZ: 0.26, CHL: 0.25, SOM: 0.25, SEN: 0.24, ROU: 0.24, GTM: 0.23, NLD: 0.23, ECU: 0.23, KHM: 0.22, ZWE: 0.21, GIN: 0.19, BEN: 0.19, RWA: 0.18, BDI: 0.18, BOL: 0.16, TUN: 0.15, SSD: 0.15, HTI: 0.15, BEL: 0.15, JOR: 0.14, DOM: 0.14, ARE: 0.14, HND: 0.14, CUB: 0.14, TJK: 0.13, PNG: 0.13, SWE: 0.13, CZE: 0.13, PRT: 0.13, AZE: 0.13, GRC: 0.12, TGO: 0.12, HUN: 0.12, ISR: 0.12, AUT: 0.11, BLR: 0.11, CHE: 0.11, SLE: 0.11, LAO: 0.10, TKM: 0.10, LBY: 0.09, HKG: 0.09, KGZ: 0.09, PRY: 0.09, NIC: 0.09, BGR: 0.08, SRB: 0.08, COG: 0.08, SLV: 0.08, DNK: 0.07, SGP: 0.07, LBN: 0.07, LBR: 0.07, FIN: 0.07, NOR: 0.07, PSE: 0.07, CAF: 0.07, OMN: 0.07, SVK: 0.07, MRT: 0.07, IRL: 0.07, NZL: 0.07, CRI: 0.06, KWT: 0.06, PAN: 0.06, HRV: 0.05, GEO: 0.05, ERI: 0.05, MNG: 0.04, URU: 0.04, PRI: 0.04, BIH: 0.04, QAT: 0.04, NAM: 0.04, MDA: 0.04, ARM: 0.04, JAM: 0.04, LTU: 0.04, GMB: 0.04, ALB: 0.03, GAB: 0.03, BWA: 0.03, LSO: 0.03, GNB: 0.03, SVN: 0.03, GNQ: 0.02, LVA: 0.02, MKD: 0.02, BHR: 0.02, TTO: 0.02, TLS: 0.02, CYP: 0.02, EST: 0.02, MUS: 0.02, SWZ: 0.02, DJB: 0.01, FJI: 0.01, COM: 0.01, REU: 0.01, SLB: 0.01, GUY: 0.01, BTN: 0.01, MAC: 0.01, LUX: 0.01, SUR: 0.01, MNE: 0.01, ESH: 0.01, MLT: 0.01, MDV: 0.01, CPV: 0.01, BRN: 0.01, BLZ: 0.01, BHS: 0.01, ISL: 0.01, GLP: 0.01, MTQ: 0.01, MYT: 0.01, VUT: 0.01, GUF: 0.01, NCL: 0.01, BRB: 0.01, PYF: 0.01, STP: 0.01, WSM: 0.01, CUW: 0.01, LCA: 0.01, GUM: 0.01, KIR: 0.01, SYC: 0.01, GRD: 0.01, FSM: 0.01, ABW: 0.01, JEY: 0.01, TON: 0.01, VCT: 0.01, ATG: 0.01, VIR: 0.01, IMN: 0.01, AND: 0.01, CYM: 0.01, DMA: 0.01, BMU: 0.01, GGY: 0.01, FRO: 0.01, GRL: 0.01, KNA: 0.01, TCA: 0.01, ASM: 0.01, SXM: 0.01, MNP: 0.01, LIE: 0.01, GIB: 0.01, VGB: 0.01, MCO: 0.01, MHL: 0.01, SMR: 0.01, MAF: 0.01, PLW: 0.01, AIA: 0.01, COK: 0.01, NRU: 0.01, BLM: 0.01, WLF: 0.01, TUV: 0.01, SPM: 0.01, SHN: 0.01, MSR: 0.01, FLK: 0.01, TKL: 0.01, NIU: 0.01, VAT: 0.0
         };
 
         const DAILY_BIRTHS = 367000;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
-        const FLASH_DURATION = 1000; // ms
+        const FADE_DURATION = 2000; // 2 seconds for smooth fade out
 
-        // UI Elements
         const birthCountEl = document.getElementById('birthCount');
         const clockEl = document.getElementById('clock');
         const barEl = document.getElementById('bar');
         const clockWrapperEl = document.getElementById('clockWrapper');
         const loadingOverlay = document.getElementById('loading-overlay');
-        const loadingText = document.getElementById('loading-text');
         const globeContainer = document.getElementById('globeViz');
 
-        // State
         let worldData = []; 
-        let flashingCountries = new Map();
+        let flashingCountries = new Map(); // Store ISO -> StartTime
         let globe;
 
         function startSimulation() {
             let lastT = Date.now(), carry = 0;
             
-            // Loop for logic & UI
+            // UI refresh (Clock/Stats)
             setInterval(updateUI, 100); 
 
             function loop() {
                 const now = Date.now();
                 
-                // 1. Birth Trigger Logic
+                // Birth logic
                 carry += Math.min(now - lastT, 1000) * BIRTH_RATE;
                 lastT = now;
                 
-                let didTrigger = false;
                 while (carry >= 1) { 
                     triggerFlash(); 
                     carry--; 
-                    didTrigger = true;
                 }
 
-                // 2. Clean up old flashes
-                let dirty = false;
-                for (const [iso, expiry] of flashingCountries) {
-                    if (now > expiry) {
+                // Cleanup expired flashes
+                for (const [iso, startTime] of flashingCountries) {
+                    if (now - startTime > FADE_DURATION) {
                         flashingCountries.delete(iso);
-                        dirty = true;
                     }
                 }
 
-                // 3. Optimized Globe Update
-                // We only force a re-render of colors if state changed.
-                // Because we use low-poly data, this is now very fast.
-                if (didTrigger || dirty) {
+                // Smoothly update globe polygon colors every frame
+                if (globe) {
                     globe.polygonCapColor(globe.polygonCapColor());
-                    globe.polygonAltitude(globe.polygonAltitude());
                 }
 
                 requestAnimationFrame(loop);
@@ -169,8 +158,6 @@
 
         function triggerFlash() {
             if (worldData.length === 0) return;
-            
-            // Simple weighted random
             const totalWeight = worldData.reduce((sum, item) => sum + item.properties.weight, 0);
             let r = Math.random() * totalWeight;
             let selectedCountry = null;
@@ -184,10 +171,7 @@
             }
 
             if (selectedCountry) {
-                const now = Date.now();
-                const iso = selectedCountry.properties.isoCode;
-                // Extend duration slightly for visibility
-                flashingCountries.set(iso, now + FLASH_DURATION);
+                flashingCountries.set(selectedCountry.properties.isoCode, Date.now());
             }
         }
 
@@ -201,61 +185,49 @@
             clockWrapperEl.style.left = pct + "%";
         }
 
-        // --- GLOBE INIT ---
         function initGlobe(countries) {
-            
-            // Prepare Data from the simpler GeoJSON
             countries.features.forEach(f => {
                 const props = f.properties;
-                // Natural Earth uses ISO_A3
                 let iso = props.ISO_A3 || props.ADM0_A3 || props.GU_A3;
-                
-                // Fix for missing codes in some datasets
                 if (iso === "-99" || !iso) {
                     const name = props.NAME || props.ADMIN;
                     if (name === "France") iso = "FRA";
                     else if (name === "Norway") iso = "NOR";
                 }
-                
                 f.properties.isoCode = iso;
                 f.properties.weight = countryShares[iso] || 0.02;
                 worldData.push(f);
             });
 
-            // Initialize Globe
             try {
                 globe = Globe()
                     .width(globeContainer.clientWidth) 
                     .height(globeContainer.clientHeight)
                     .backgroundColor('rgba(0,0,0,0)')
-                    // Removed heavy textures. Just using a simple base color via polygon logic
-                    // or a very lightweight texture if preferred.
-                    // For maximum performance and "simple" look, we omit globeImageUrl 
-                    // and rely on a base sphere or just the polygons.
-                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg') // Kept basic night texture, but removed topology
+                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg') 
                     .polygonsData(countries.features)
                     .polygonSideColor(() => 'rgba(0,0,0,0)')
-                    .polygonStrokeColor(() => '#112233') // Darker, subtler borders
+                    .polygonStrokeColor(() => 'rgba(56, 189, 248, 0.1)') // Very faint blue borders
                     .polygonCapColor(d => {
-                        return flashingCountries.has(d.properties.isoCode) 
-                            ? '#f59e0b' // Flash Orange
-                            : 'rgba(26, 43, 66, 0.4)'; // Transparent Blue-ish
+                        const startTime = flashingCountries.get(d.properties.isoCode);
+                        if (startTime) {
+                            const elapsed = Date.now() - startTime;
+                            const progress = Math.min(elapsed / FADE_DURATION, 1);
+                            const opacity = 1 - progress; // Linear fade out
+                            // Interpolate between Orange and the Base Blue
+                            return `rgba(245, 158, 11, ${0.3 + (opacity * 0.7)})`;
+                        }
+                        return 'rgba(26, 43, 66, 0.4)'; // Default static color
                     })
-                    .polygonAltitude(d => flashingCountries.has(d.properties.isoCode) ? 0.04 : 0.005)
-                    .polygonLabel(d => `
-                        <div style="background:#0f172a; padding:4px 8px; border-radius:4px; color:#38bdf8;">
-                            ${d.properties.NAME || d.properties.ADMIN}
-                        </div>
-                    `)
+                    .polygonAltitude(d => flashingCountries.has(d.properties.isoCode) ? 0.02 : 0.005)
                     (document.getElementById('globeViz'));
 
-                // Camera Setup
+                // Smooth Camera/Rotation Setup
                 globe.controls().autoRotate = true;
-                globe.controls().autoRotateSpeed = 0.6; // Slightly faster rotation
+                globe.controls().autoRotateSpeed = 0.5; 
                 globe.controls().enableZoom = true;
-                globe.pointOfView({ lat: 20, lng: 80, altitude: 1.8 }); 
+                globe.pointOfView({ lat: 20, lng: 50, altitude: 1.8 }); 
 
-                // Handle Resize
                 window.addEventListener('resize', () => {
                     globe.width(globeContainer.clientWidth);
                     globe.height(globeContainer.clientHeight);
@@ -267,23 +239,12 @@
 
             } catch (e) {
                 console.error(e);
-                alert("Error initializing Globe: " + e.message);
             }
         }
 
-        // --- FETCH OPTIMIZED DATA ---
-        // Using Natural Earth 110m (Low Poly) instead of High-Res
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
-            .then(r => {
-                if (!r.ok) throw new Error("Network response was not ok");
-                return r.json();
-            })
-            .then(initGlobe)
-            .catch(err => {
-                console.error(err);
-                loadingText.innerText = "Error Loading Map Data.";
-                loadingText.style.color = "red";
-            });
+            .then(r => r.json())
+            .then(initGlobe);
     </script>
 </body>
 </html>
