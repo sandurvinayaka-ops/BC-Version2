@@ -3,48 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Smooth TV Edition</title>
+    <title>Birth Pulse 2025 - Philips TV Pro</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         :root {
             --bg-color: #010409;
             --gold-flash: #fbbf24; 
             --purple-text: #a855f7;
-            --map-blue: #38bdf8;   
+            --map-blue: #0ea5e9;   
         }
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
             overflow: hidden; background-color: var(--bg-color);
             font-family: 'Segoe UI', Roboto, sans-serif;
             color: white;
-            /* TV-specific rendering hint */
-            image-rendering: optimizeSpeed;
         }
 
-        /* High-Performance Starfield */
-        .stars-bg {
+        /* BACKGROUND - CSS Stars (zero CPU load) */
+        .stars-container {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, #0f172a 0%, #010409 100%);
+            background: radial-gradient(circle at center, #0f172a 0%, #010409 100%);
             z-index: 1;
         }
         .star {
             position: absolute; background: white; border-radius: 50%;
             animation: twinkle var(--t) infinite ease-in-out;
-            will-change: opacity;
         }
-        @keyframes twinkle { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.8; } }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 
-        #comet-canvas {
+        /* FOREGROUND - Comets */
+        #comet-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 100; pointer-events: none;
         }
 
         .main-heading {
             position: absolute; top: 7vh; left: 5vw;
-            font-size: 2.8vw; color: var(--purple-text);
+            font-size: 3.5vw; /* 1.2x size increase */
+            color: var(--purple-text);
             font-weight: 800; text-transform: uppercase;
             letter-spacing: 2px; z-index: 110;
-            text-shadow: 0 0 30px rgba(168, 85, 247, 0.7);
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.8);
             margin: 0;
         }
 
@@ -54,7 +53,7 @@
         }
 
         .stats-panel { 
-            padding-left: 6vw; width: 33vw;
+            padding-left: 6vw; width: 35vw;
             display: flex; flex-direction: column; justify-content: center;
             z-index: 120;
         }
@@ -62,22 +61,21 @@
         .label { font-size: 1.4vw; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; font-weight: bold; }
         .count {
             font-size: 8.5vw; font-weight: 900; color: var(--gold-flash); line-height: 1;
-            filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.7)); margin: 1.5vh 0; 
-            font-variant-numeric: tabular-nums;
+            margin: 1vh 0; font-variant-numeric: tabular-nums;
         }
         .sub-text { font-size: 1.5vw; color: var(--map-blue); opacity: 0.9; }
         
-        .progress-box { width: 95%; margin-top: 5vh; position: relative; }
-        .bar-container { height: 10px; background: rgba(56, 189, 248, 0.1); border-radius: 20px; }
-        .bar-fill { height: 100%; width: 0%; background: var(--gold-flash); box-shadow: 0 0 15px var(--gold-flash); border-radius: 20px;}
-        #clock { color: var(--gold-flash); font-size: 2vw; font-weight: bold; display: block; margin-top: 20px; letter-spacing: 3px; }
+        .progress-box { width: 90%; margin-top: 5vh; position: relative; }
+        .bar-container { height: 10px; background: rgba(14, 165, 233, 0.2); border-radius: 20px; }
+        .bar-fill { height: 100%; width: 0%; background: var(--gold-flash); border-radius: 20px;}
+        #clock { color: var(--gold-flash); font-size: 1.8vw; font-weight: bold; display: block; margin-top: 15px; letter-spacing: 2px; }
 
         .globe-panel { 
-            position: absolute; right: -8vw; width: 70vw; height: 100vh;
+            position: absolute; right: -10vw; width: 75vw; height: 100vh;
             z-index: 5; 
         }
         
-        #globeViz { width: 100%; height: 100%; outline: none; }
+        #globeViz { width: 100%; height: 100%; }
 
         #loading {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -88,8 +86,8 @@
 </head>
 <body>
 
-    <div class="stars-bg" id="stars-bg"></div>
-    <canvas id="comet-canvas"></canvas>
+    <div class="stars-container" id="stars-bg"></div>
+    <canvas id="comet-layer"></canvas>
     
     <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
 
@@ -108,7 +106,7 @@
             <div id="globeViz"></div>
         </div>
     </div>
-    <div id="loading">OPTIMIZING FOR PHILIPS TV...</div>
+    <div id="loading">OPTIMIZING FOR TV...</div>
 
     <script>
         const countryShares = { IND: 18.29, CHN: 17.69, USA: 4.34, IDN: 3.57, PAK: 3.19, NGA: 2.97, BRA: 2.66, BGD: 2.19, RUS: 1.80, ETH: 1.69, MEX: 1.65, JPN: 1.54, EGY: 1.48, PHL: 1.46, COD: 1.41, VNM: 1.27, IRN: 1.15, TUR: 1.10, DEU: 1.05, THA: 0.89, TZA: 0.88, GBR: 0.87, FRA: 0.83, ZAF: 0.81, ITA: 0.74, KEN: 0.72, MMR: 0.69, COL: 0.67, KOR: 0.65, SDN: 0.65, UGA: 0.64, ESP: 0.60, DZA: 0.59, IRQ: 0.59, ARG: 0.57, AFG: 0.55, YEM: 0.52, CAN: 0.50, AGO: 0.49, UKR: 0.49, MAR: 0.48, POL: 0.48, UZB: 0.46, MYS: 0.45, MOZ: 0.45, GHA: 0.44, PER: 0.43, SAU: 0.43, MDG: 0.41, CIV: 0.41, CMR: 0.37, NPL: 0.37, VEN: 0.36, NER: 0.35, AUS: 0.34, PRK: 0.33, SYR: 0.32, MLI: 0.31, BFA: 0.30, MWI: 0.28, ZMB: 0.27, TCD: 0.26, KAZ: 0.26, CHL: 0.25, SOM: 0.25, SEN: 0.24, ROU: 0.24, GTM: 0.23, NLD: 0.23, ECU: 0.23, KHM: 0.22, ZWE: 0.21, GIN: 0.19, BEN: 0.19, RWA: 0.18, BDI: 0.18, BOL: 0.16, TUN: 0.15, SSD: 0.15, HTI: 0.15, BEL: 0.15, JOR: 0.14, DOM: 0.14, ARE: 0.14, HND: 0.14, CUB: 0.14, TJK: 0.13, PNG: 0.13, SWE: 0.13, CZE: 0.13, PRT: 0.13, AZE: 0.13, GRC: 0.12, TGO: 0.12, HUN: 0.12, ISR: 0.12, AUT: 0.11, BLR: 0.11, CHE: 0.11, SLE: 0.11, LAO: 0.10, TKM: 0.10, LBY: 0.09, HKG: 0.09, KGZ: 0.09, PRY: 0.09, NIC: 0.09, BGR: 0.08, SRB: 0.08, COG: 0.08, SLV: 0.08, DNK: 0.07, SGP: 0.07, LBN: 0.07, LBR: 0.07, FIN: 0.07, NOR: 0.07, PSE: 0.07, CAF: 0.07, OMN: 0.07, SVK: 0.07, MRT: 0.07, IRL: 0.07, NZL: 0.07, CRI: 0.06, KWT: 0.06, PAN: 0.06, HRV: 0.05, GEO: 0.05, ERI: 0.05, MNG: 0.04, URU: 0.04, PRI: 0.04, BIH: 0.04, QAT: 0.04, NAM: 0.04, MDA: 0.04, ARM: 0.04, JAM: 0.04, LTU: 0.04, GMB: 0.04, ALB: 0.03, GAB: 0.03, BWA: 0.03, LSO: 0.03, GNB: 0.03, SVN: 0.03, GNQ: 0.02, LVA: 0.02, MKD: 0.02, BHR: 0.02, TTO: 0.02, TLS: 0.02, CYP: 0.02, EST: 0.02, MUS: 0.02, SWZ: 0.02, DJB: 0.01, FJI: 0.01, COM: 0.01, REU: 0.01, SLB: 0.01, GUY: 0.01, BTN: 0.01, MAC: 0.01, LUX: 0.01, SUR: 0.01, MNE: 0.01, ESH: 0.01, MLT: 0.01, MDV: 0.01, CPV: 0.01, BRN: 0.01, BLZ: 0.01, BHS: 0.01, ISL: 0.01, GLP: 0.01, MTQ: 0.01, MYT: 0.01, VUT: 0.01, GUF: 0.01, NCL: 0.01, BRB: 0.01, PYF: 0.01, STP: 0.01, WSM: 0.01, CUW: 0.01, LCA: 0.01, GUM: 0.01, KIR: 0.01, SYC: 0.01, GRD: 0.01, FSM: 0.01, ABW: 0.01, JEY: 0.01, TON: 0.01, VCT: 0.01, ATG: 0.01, VIR: 0.01, IMN: 0.01, AND: 0.01, CYM: 0.01, DMA: 0.01, BMU: 0.01, GGY: 0.01, FRO: 0.01, GRL: 0.01, KNA: 0.01, TCA: 0.01, ASM: 0.01, SXM: 0.01, MNP: 0.01, LIE: 0.01, GIB: 0.01, VGB: 0.01, MCO: 0.01, MHL: 0.01, SMR: 0.01, MAF: 0.01, PLW: 0.01, AIA: 0.01, COK: 0.01, NRU: 0.01, BLM: 0.01, WLF: 0.01, TUV: 0.01, SPM: 0.01, SHN: 0.01, MSR: 0.01, FLK: 0.01, TKL: 0.01, NIU: 0.01, VAT: 0.0 };
@@ -123,17 +121,16 @@
             for(let i=0; i<80; i++) {
                 const s = document.createElement('div');
                 s.className = 'star';
-                s.style.left = Math.random()*100 + '%';
-                s.style.top = Math.random()*100 + '%';
-                const size = (1 + Math.random()*2) + 'px';
+                s.style.left = Math.random()*100 + '%'; s.style.top = Math.random()*100 + '%';
+                const size = (1 + Math.random()*3) + 'px';
                 s.style.width = size; s.style.height = size;
-                s.style.setProperty('--t', (3 + Math.random()*4) + 's');
+                s.style.setProperty('--t', (2 + Math.random()*4) + 's');
                 bg.appendChild(s);
             }
         }
 
         // --- REALISTIC COMETS ---
-        const cCanvas = document.getElementById('comet-canvas');
+        const cCanvas = document.getElementById('comet-layer');
         const cCtx = cCanvas.getContext('2d');
         let activeComets = [];
 
@@ -141,19 +138,14 @@
             cCanvas.width = window.innerWidth;
             cCanvas.height = window.innerHeight;
             cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
-            
-            if (Math.random() > 0.998) {
-                activeComets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -12, vy: 10, life: 1 });
-            }
-
+            if (Math.random() > 0.998) { activeComets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -12, vy: 12, life: 1 }); }
             activeComets.forEach((c, i) => {
-                const grad = cCtx.createLinearGradient(c.x, c.y, c.x + 80, c.y - 60);
-                grad.addColorStop(0, `rgba(255, 255, 255, ${c.life})`);
-                grad.addColorStop(1, `rgba(168, 85, 247, 0)`);
-                cCtx.strokeStyle = grad; cCtx.lineWidth = 3; cCtx.lineCap = 'round';
-                cCtx.beginPath(); cCtx.moveTo(c.x, c.y); cCtx.lineTo(c.x + 100, c.y - 70); cCtx.stroke();
-                
-                c.x += c.vx; c.y += c.vy; c.life -= 0.008;
+                cCtx.globalAlpha = c.life;
+                const grad = cCtx.createLinearGradient(c.x, c.y, c.x + 80, c.y - 80);
+                grad.addColorStop(0, 'white'); grad.addColorStop(1, 'rgba(168, 85, 247, 0)');
+                cCtx.strokeStyle = grad; cCtx.lineWidth = 4;
+                cCtx.beginPath(); cCtx.moveTo(c.x, c.y); cCtx.lineTo(c.x + 100, c.y - 100); cCtx.stroke();
+                c.x += c.vx; c.y += c.vy; c.life -= 0.01;
                 if(c.life <= 0) activeComets.splice(i, 1);
             });
             requestAnimationFrame(drawComets);
@@ -162,76 +154,45 @@
         // --- SIMULATION ---
         function startSimulation() {
             let lastT = Date.now(), carry = 0;
-            
-            // Stats Loop
             setInterval(() => {
                 const now = new Date();
                 const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 let num = Math.floor((now - start) * BIRTH_RATE);
+                // TV Formatter: Dot separator
                 document.getElementById('birthCount').innerText = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
                 document.getElementById('bar').style.width = (((now - start) / 86400000) * 100) + "%";
             }, 1000);
 
-            // Logic Loop
-            function mainLoop() {
+            function loop() {
                 const now = Date.now();
                 carry += Math.min(now - lastT, 1000) * BIRTH_RATE;
                 lastT = now;
-                
-                let trigger = false;
+                let didTrigger = false;
                 while (carry >= 1) { 
                     const iso = getRandomCountry();
-                    if(iso) {
-                        flashingISO.set(iso, now);
-                        trigger = true;
-                    }
+                    if(iso) { flashingISO.set(iso, now); didTrigger = true; }
                     carry--; 
                 }
-
-                // Cleanup expired flashes
                 for (const [iso, start] of flashingISO) {
-                    if (now - start > FADE_TIME) {
-                        flashingISO.delete(iso);
-                        trigger = true;
-                    }
+                    if (now - start > FADE_TIME) { flashingISO.delete(iso); didTrigger = true; }
                 }
-
-                // IMPORTANT: Only update polygons if a flash started or ended
-                // This keeps the rotation smooth on TVs
-                if (trigger && globe) {
-                    updateFlashingLayer();
-                }
-                
-                requestAnimationFrame(mainLoop);
+                // PERFORMANCE FIX: Only update polygons when strictly necessary
+                if (didTrigger && globe) { globe.polygonCapColor(globe.polygonCapColor()); }
+                requestAnimationFrame(loop);
             }
-            mainLoop();
+            loop();
         }
 
         function getRandomCountry() {
             const total = geoData.reduce((s, i) => s + i.properties.weight, 0);
             let r = Math.random() * total;
-            for (let f of geoData) {
-                r -= f.properties.weight;
-                if (r <= 0) return f.properties.isoCode;
-            }
+            for (let f of geoData) { r -= f.properties.weight; if (r <= 0) return f.properties.isoCode; }
             return null;
         }
 
-        function updateFlashingLayer() {
-            // We only ask the globe to recalculate colors for the countries in the Map
-            globe.polygonCapColor(d => {
-                const start = flashingISO.get(d.properties.isoCode);
-                if (start) {
-                    const p = 1 - Math.min((Date.now() - start) / FADE_TIME, 1);
-                    return `rgba(251, 191, 36, ${0.4 + p * 0.6})`;
-                }
-                return 'rgba(10, 25, 47, 0.9)'; // Solid Navy
-            });
-        }
-
-        function initGlobe(data) {
-            geoData = data.features.map(f => {
+        function initGlobe(countries) {
+            geoData = countries.features.map(f => {
                 let iso = f.properties.ISO_A3 || f.properties.ADM0_A3;
                 f.properties.isoCode = iso;
                 f.properties.weight = countryShares[iso] || 0.01;
@@ -244,24 +205,32 @@
                 .backgroundColor('rgba(0,0,0,0)')
                 .showAtmosphere(true)
                 .atmosphereColor('#38bdf8')
-                .atmosphereAltitude(0.2)
+                .atmosphereAltitude(0.25)
                 .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
                 .polygonsData(geoData)
                 .polygonSideColor(() => 'rgba(0,0,0,0)')
-                .polygonStrokeColor(() => 'rgba(168, 85, 247, 0.6)')
-                .polygonCapColor(() => 'rgba(10, 25, 47, 0.9)')
-                .polygonAltitude(d => flashingISO.has(d.properties.isoCode) ? 0.03 : 0.01)
+                .polygonStrokeColor(() => 'rgba(14, 165, 233, 1)')
+                .polygonCapColor(d => {
+                    const start = flashingISO.get(d.properties.isoCode);
+                    if (start) {
+                        const p = 1 - Math.min((Date.now() - start) / FADE_TIME, 1);
+                        return `rgba(251, 191, 36, ${0.4 + p * 0.6})`; // WHOLE COUNTRY FLASH
+                    }
+                    return 'rgba(20, 40, 80, 1)'; // SOLID BLUISH LAND
+                })
+                .polygonAltitude(d => flashingISO.has(d.properties.isoCode) ? 0.04 : 0.01)
                 (document.getElementById('globeViz'));
 
-            // TV-Smooth Rotation settings
-            const controls = globe.controls();
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.48; // 1.2x Faster
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.enableZoom = false;
+            // TV SMOOTHNESS FIX: Lower pixel ratio to 1 (prevents 4K lag)
+            const renderer = globe.renderer();
+            renderer.setPixelRatio(1);
+
+            globe.controls().autoRotate = true;
+            globe.controls().autoRotateSpeed = 0.48; // 1.2x Faster
+            globe.controls().enableZoom = false;
             
-            globe.pointOfView({ lat: 10, lng: 10, altitude: 1.9 });
+            // Reduced Size: 0.9x (Altitude 1.85)
+            globe.pointOfView({ lat: 10, lng: 10, altitude: 1.85 });
 
             document.getElementById('loading').style.display = 'none';
             initStars();
@@ -269,7 +238,6 @@
             startSimulation();
         }
 
-        // Use low-poly 110m map specifically for Smart TV performance
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
             .then(r => r.json()).then(initGlobe);
     </script>
