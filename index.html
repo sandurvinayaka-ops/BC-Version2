@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Smooth</title>
+    <title>Birth Pulse 2025 - High Visibility</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         :root {
             --bg-color: #050a12;
             --deep-orange: #f59e0b; 
             --map-blue: #38bdf8;   
-            --land-fill: #1a2b42; 
+            --land-base: rgba(30, 58, 138, 0.5); /* Brighter base for visibility */
+            --border-color: rgba(56, 189, 248, 0.6); /* Clearer country borders */
         }
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
@@ -21,7 +22,7 @@
         .main-heading {
             position: absolute;
             top: 40px; left: 50px;
-            font-size: 2rem; 
+            font-size: 1.8rem; 
             color: var(--deep-orange);
             font-weight: 800;
             text-transform: uppercase;
@@ -40,16 +41,16 @@
         }
 
         .stats-panel { 
-            padding-left: 50px; width: 350px; z-index: 20; 
+            padding-left: 50px; width: 380px; z-index: 20; 
             display: flex; flex-direction: column; justify-content: center;
         }
 
-        .label { font-size: 0.8rem; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; opacity: 0.8; }
+        .label { font-size: 0.85rem; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; font-weight: bold; }
         .count {
             font-size: 6.5rem; font-weight: 900; color: var(--deep-orange); line-height: 1;
             filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.5)); margin: 10px 0; font-variant-numeric: tabular-nums;
         }
-        .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.4; }
+        .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.6; }
         
         .progress-box { width: 100%; margin-top: 40px; position: relative; }
         .bar-container { height: 2px; background: #0f172a; border-radius: 10px; }
@@ -61,8 +62,8 @@
             flex: 1; height: 100%; position: relative; 
             display: flex; align-items: center; justify-content: flex-end; 
             overflow: hidden;
-            background: radial-gradient(circle at center, #0a1424 0%, #050a12 70%);
-            /* MOVE EARTH 1CM (approx 40px) TO THE RIGHT */
+            background: radial-gradient(circle at center, #0a1424 0%, #050a12 80%);
+            /* Shift globe right approx 1cm */
             transform: translateX(40px);
         }
         
@@ -73,17 +74,19 @@
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             z-index: 2000; color: var(--map-blue);
-            pointer-events: none; transition: opacity 0.5s;
+            transition: opacity 0.5s;
         }
     </style>
 </head>
 <body>
 
-    <h1 class="main-heading">Mother & Child Care</h1>
+    <!-- Updated Heading -->
+    <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
 
     <div class="container">
         <div class="stats-panel">
-            <div class="label">World Births Today</div>
+            <!-- Updated Label -->
+            <div class="label">Global Births Today</div>
             <div id="birthCount" class="count">0</div>
             <div class="sub-text">new lives welcomed since midnight</div>
             <div class="progress-box">
@@ -95,7 +98,7 @@
         <div class="globe-panel">
             <div id="loading-overlay">
                 <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">INITIALIZING</div>
-                <div id="loading-text" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Loading Global Data...</div>
+                <div id="loading-text" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Loading High-Visibility Map...</div>
             </div>
             <div id="globeViz"></div>
         </div>
@@ -108,7 +111,7 @@
 
         const DAILY_BIRTHS = 367000;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
-        const FADE_DURATION = 2000; // 2 seconds for smooth fade out
+        const FADE_DURATION = 2500; 
 
         const birthCountEl = document.getElementById('birthCount');
         const clockEl = document.getElementById('clock');
@@ -118,39 +121,22 @@
         const globeContainer = document.getElementById('globeViz');
 
         let worldData = []; 
-        let flashingCountries = new Map(); // Store ISO -> StartTime
+        let flashingCountries = new Map(); 
         let globe;
 
         function startSimulation() {
             let lastT = Date.now(), carry = 0;
-            
-            // UI refresh (Clock/Stats)
             setInterval(updateUI, 100); 
 
             function loop() {
                 const now = Date.now();
-                
-                // Birth logic
                 carry += Math.min(now - lastT, 1000) * BIRTH_RATE;
                 lastT = now;
-                
-                while (carry >= 1) { 
-                    triggerFlash(); 
-                    carry--; 
-                }
-
-                // Cleanup expired flashes
+                while (carry >= 1) { triggerFlash(); carry--; }
                 for (const [iso, startTime] of flashingCountries) {
-                    if (now - startTime > FADE_DURATION) {
-                        flashingCountries.delete(iso);
-                    }
+                    if (now - startTime > FADE_DURATION) flashingCountries.delete(iso);
                 }
-
-                // Smoothly update globe polygon colors every frame
-                if (globe) {
-                    globe.polygonCapColor(globe.polygonCapColor());
-                }
-
+                if (globe) globe.polygonCapColor(globe.polygonCapColor());
                 requestAnimationFrame(loop);
             }
             loop();
@@ -161,18 +147,11 @@
             const totalWeight = worldData.reduce((sum, item) => sum + item.properties.weight, 0);
             let r = Math.random() * totalWeight;
             let selectedCountry = null;
-
             for (let f of worldData) {
                 r -= f.properties.weight;
-                if (r <= 0) {
-                    selectedCountry = f;
-                    break;
-                }
+                if (r <= 0) { selectedCountry = f; break; }
             }
-
-            if (selectedCountry) {
-                flashingCountries.set(selectedCountry.properties.isoCode, Date.now());
-            }
+            if (selectedCountry) flashingCountries.set(selectedCountry.properties.isoCode, Date.now());
         }
 
         function updateUI() {
@@ -207,22 +186,19 @@
                     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg') 
                     .polygonsData(countries.features)
                     .polygonSideColor(() => 'rgba(0,0,0,0)')
-                    .polygonStrokeColor(() => 'rgba(56, 189, 248, 0.1)') // Very faint blue borders
+                    .polygonStrokeColor(() => 'rgba(56, 189, 248, 0.7)') // Clearer border
                     .polygonCapColor(d => {
                         const startTime = flashingCountries.get(d.properties.isoCode);
                         if (startTime) {
                             const elapsed = Date.now() - startTime;
-                            const progress = Math.min(elapsed / FADE_DURATION, 1);
-                            const opacity = 1 - progress; // Linear fade out
-                            // Interpolate between Orange and the Base Blue
-                            return `rgba(245, 158, 11, ${0.3 + (opacity * 0.7)})`;
+                            const opacity = 1 - Math.min(elapsed / FADE_DURATION, 1);
+                            return `rgba(245, 158, 11, ${0.4 + (opacity * 0.6)})`;
                         }
-                        return 'rgba(26, 43, 66, 0.4)'; // Default static color
+                        return 'rgba(30, 58, 138, 0.4)'; // Clear land visibility
                     })
-                    .polygonAltitude(d => flashingCountries.has(d.properties.isoCode) ? 0.02 : 0.005)
+                    .polygonAltitude(d => flashingCountries.has(d.properties.isoCode) ? 0.025 : 0.005)
                     (document.getElementById('globeViz'));
 
-                // Smooth Camera/Rotation Setup
                 globe.controls().autoRotate = true;
                 globe.controls().autoRotateSpeed = 0.5; 
                 globe.controls().enableZoom = true;
@@ -237,9 +213,7 @@
                 setTimeout(() => loadingOverlay.style.display = 'none', 500);
                 startSimulation();
 
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
@@ -247,4 +221,4 @@
             .then(initGlobe);
     </script>
 </body>
-</html> 
+</html>
