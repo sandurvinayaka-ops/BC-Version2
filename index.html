@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Purple & Gold Edition</title>
+    <title>Birth Pulse 2025 - High Contrast Edition</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         :root {
-            --bg-color: #020617;
+            --bg-color: #010409;
             --gold-flash: #fbbf24; 
-            --purple-text: #a855f7; /* Purple color */
+            --purple-text: #a855f7;
             --map-blue: #38bdf8;   
         }
         body, html {
@@ -18,17 +18,16 @@
             font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
-        /* Space Canvas on top for visibility of comets */
+        /* Space Canvas for background stars and foreground comets */
         #space-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 100; pointer-events: none;
+            z-index: 1; pointer-events: none;
         }
 
         .main-heading {
             position: absolute;
             top: 40px; left: 50px;
-            /* 1.2x Size Increase (from 1.8rem to 2.2rem) */
-            font-size: 2.2rem; 
+            font-size: 2.2rem; /* 1.2x Size */
             color: var(--purple-text);
             font-weight: 800;
             text-transform: uppercase;
@@ -37,7 +36,7 @@
             text-decoration-thickness: 3px;
             text-underline-offset: 10px;
             margin: 0; z-index: 110;
-            text-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
+            text-shadow: 0 0 30px rgba(168, 85, 247, 0.7);
             pointer-events: none;
         }
 
@@ -52,15 +51,15 @@
             display: flex; flex-direction: column; justify-content: center;
         }
 
-        .label { font-size: 0.9rem; color: var(--map-blue); letter-spacing: 4px; text-transform: uppercase; font-weight: bold; opacity: 0.9; }
+        .label { font-size: 0.9rem; color: var(--map-blue); letter-spacing: 4px; text-transform: uppercase; font-weight: bold; opacity: 1; }
         .count {
             font-size: 6.5rem; font-weight: 900; color: var(--gold-flash); line-height: 1;
-            filter: drop-shadow(0 0 25px rgba(251, 191, 36, 0.6)); margin: 15px 0; font-variant-numeric: tabular-nums;
+            filter: drop-shadow(0 0 25px rgba(251, 191, 36, 0.8)); margin: 15px 0; font-variant-numeric: tabular-nums;
         }
-        .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.5; font-style: italic; }
+        .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.7; font-style: italic; }
         
         .progress-box { width: 100%; margin-top: 50px; position: relative; }
-        .bar-container { height: 3px; background: rgba(56, 189, 248, 0.1); border-radius: 10px; }
+        .bar-container { height: 4px; background: rgba(56, 189, 248, 0.2); border-radius: 10px; }
         .bar-fill { height: 100%; width: 0%; background: var(--gold-flash); box-shadow: 0 0 15px var(--gold-flash); }
         .clock-wrapper { position: absolute; top: 15px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
         #clock { color: var(--gold-flash); font-size: 1rem; font-weight: bold; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
@@ -100,14 +99,14 @@
 
         <div class="globe-panel">
             <div id="loading-overlay">
-                <div style="letter-spacing: 8px; font-weight: bold; font-size: 18px;">INITIALIZING COSMOS</div>
+                <div style="letter-spacing: 8px; font-weight: bold; font-size: 18px;">CONSTRUCTING WORLD</div>
             </div>
             <div id="globeViz"></div>
         </div>
     </div>
 
     <script>
-        // --- SPACE ENGINE (STARS & BOLDER COMETS ON TOP LAYER) ---
+        // --- SPACE ENGINE (STARS & TOP-LAYER COMETS) ---
         const canvas = document.getElementById('space-canvas');
         const ctx = canvas.getContext('2d');
         let stars = [], comets = [];
@@ -120,7 +119,7 @@
                 stars.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    size: Math.random() * 1.5,
+                    size: Math.random() * 1.8,
                     blinkSpeed: 0.005 + Math.random() * 0.01,
                     opacity: Math.random(),
                     increasing: Math.random() > 0.5
@@ -129,12 +128,12 @@
         }
 
         function createComet() {
-            if (Math.random() > 0.996) { 
-                const speed = 12 + Math.random() * 8;
+            if (Math.random() > 0.997) { 
+                const speed = 15 + Math.random() * 10;
                 comets.push({
                     x: Math.random() * canvas.width,
                     y: -100,
-                    vx: (Math.random() * 10) - 15, // Diagonal left
+                    vx: -speed * 0.7,
                     vy: speed,
                     opacity: 1.0
                 });
@@ -144,11 +143,11 @@
         function drawSpace() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw Stars
+            // Stars (Background)
             stars.forEach(s => {
                 if (s.increasing) s.opacity += s.blinkSpeed;
                 else s.opacity -= s.blinkSpeed;
-                if (s.opacity > 0.8) s.increasing = false;
+                if (s.opacity > 0.9) s.increasing = false;
                 if (s.opacity < 0.1) s.increasing = true;
                 ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
                 ctx.beginPath();
@@ -156,19 +155,22 @@
                 ctx.fill();
             });
 
-            // Draw Comets
+            // Comets (Foreground) - Drawn with glow
             comets.forEach((c, i) => {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "#a855f7";
                 ctx.beginPath();
-                let grad = ctx.createLinearGradient(c.x, c.y, c.x - c.vx*8, c.y - c.vy*8);
+                let grad = ctx.createLinearGradient(c.x, c.y, c.x - c.vx*10, c.y - c.vy*10);
                 grad.addColorStop(0, `rgba(255, 255, 255, ${c.opacity})`);
-                grad.addColorStop(1, `rgba(168, 85, 247, 0)`); // Fades to purple trail
+                grad.addColorStop(1, `rgba(168, 85, 247, 0)`);
                 ctx.strokeStyle = grad;
                 ctx.lineWidth = 4; 
                 ctx.moveTo(c.x, c.y);
-                ctx.lineTo(c.x - c.vx * 10, c.y - c.vy * 10);
+                ctx.lineTo(c.x - c.vx * 12, c.y - c.vy * 12);
                 ctx.stroke();
+                ctx.shadowBlur = 0; // Reset for performance
 
-                c.x += c.vx; c.y += c.vy; c.opacity -= 0.006;
+                c.x += c.vx; c.y += c.vy; c.opacity -= 0.005;
                 if (c.opacity <= 0) comets.splice(i, 1);
             });
 
@@ -201,15 +203,11 @@
                 lastT = now;
                 while (carry >= 1) { triggerFlash(); carry--; }
 
-                // Remove expired flashes
                 for (const [iso, startTime] of flashingCountries) {
                     if (now - startTime > FADE_DURATION) flashingCountries.delete(iso);
                 }
 
-                if (globe) {
-                    globe.polygonCapColor(globe.polygonCapColor());
-                }
-                
+                if (globe) globe.polygonCapColor(globe.polygonCapColor());
                 requestAnimationFrame(loop);
             }
             loop();
@@ -224,9 +222,7 @@
                 r -= f.properties.weight;
                 if (r <= 0) { selected = f; break; }
             }
-            if (selected) {
-                flashingCountries.set(selected.properties.isoCode, Date.now());
-            }
+            if (selected) flashingCountries.set(selected.properties.isoCode, Date.now());
         }
 
         function updateUI() {
@@ -253,27 +249,26 @@
                 .backgroundColor('rgba(0,0,0,0)')
                 .showAtmosphere(true)
                 .atmosphereColor('#38bdf8')
-                .atmosphereAltitude(0.18)
+                .atmosphereAltitude(0.25) // Thicker atmosphere for better visibility
                 .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg') 
                 .polygonsData(countries.features)
                 .polygonSideColor(() => 'rgba(0,0,0,0)')
-                .polygonStrokeColor(() => 'rgba(168, 85, 247, 0.4)') // Subtle Purple borders
+                .polygonStrokeColor(() => 'rgba(168, 85, 247, 0.7)') // Clear Purple Borders
                 .polygonCapColor(d => {
                     const startTime = flashingCountries.get(d.properties.isoCode);
                     if (startTime) {
                         const elapsed = Date.now() - startTime;
                         const p = 1 - Math.min(elapsed / FADE_DURATION, 1);
-                        return `rgba(251, 191, 36, ${0.2 + (p * 0.8)})`; // High intensity Gold flash
+                        return `rgba(251, 191, 36, ${0.4 + (p * 0.6)})`; // Solid Gold Pulse
                     }
-                    return 'rgba(30, 58, 138, 0.25)';
+                    return 'rgba(10, 25, 47, 0.9)'; // Solid, Non-Transparent Dark Blue Land
                 })
-                .polygonAltitude(d => flashingCountries.has(d.properties.isoCode) ? 0.03 : 0.01)
+                .polygonAltitude(d => flashingCountries.has(d.properties.isoCode) ? 0.04 : 0.01)
                 (document.getElementById('globeViz'));
 
-            // Size: 1.3x increase (Altitude 1.6), Rotation: 1.2x increase (0.48)
             globe.controls().autoRotate = true;
-            globe.controls().autoRotateSpeed = 0.48; 
-            globe.pointOfView({ lat: 15, lng: 40, altitude: 1.6 });
+            globe.controls().autoRotateSpeed = 0.48; // 1.2x Faster
+            globe.pointOfView({ lat: 15, lng: 40, altitude: 1.6 }); // 1.3x Larger
 
             document.getElementById('loading-overlay').style.opacity = '0';
             initSpace();
