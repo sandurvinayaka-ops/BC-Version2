@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - High Visibility</title>
+    <title>Birth Pulse 2025 - Professional Edition</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         :root {
-            --bg-color: #050a12;
-            --deep-orange: #f59e0b; 
+            --bg-color: #020617;
+            --deep-orange: #fbbf24; 
             --map-blue: #38bdf8;   
-            --land-base: rgba(30, 58, 138, 0.5); /* Brighter base for visibility */
-            --border-color: rgba(56, 189, 248, 0.6); /* Clearer country borders */
+            --glow-orange: rgba(251, 191, 36, 0.8);
         }
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
             overflow: hidden; background-color: var(--bg-color);
             font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        #space-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
         }
 
         .main-heading {
@@ -26,66 +30,62 @@
             color: var(--deep-orange);
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             text-decoration: underline;
             text-decoration-thickness: 3px;
-            text-underline-offset: 8px;
+            text-underline-offset: 10px;
             margin: 0; z-index: 100;
-            filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.4));
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
             pointer-events: none;
         }
 
         .container { 
             display: flex; width: 100%; height: 100%; 
-            align-items: center; justify-content: space-between; 
+            align-items: center; justify-content: space-between;
+            position: relative; z-index: 10;
         }
 
         .stats-panel { 
-            padding-left: 50px; width: 380px; z-index: 20; 
+            padding-left: 60px; width: 400px;
             display: flex; flex-direction: column; justify-content: center;
         }
 
-        .label { font-size: 0.85rem; color: var(--map-blue); letter-spacing: 3px; text-transform: uppercase; font-weight: bold; }
+        .label { font-size: 0.9rem; color: var(--map-blue); letter-spacing: 4px; text-transform: uppercase; font-weight: bold; opacity: 0.9; }
         .count {
             font-size: 6.5rem; font-weight: 900; color: var(--deep-orange); line-height: 1;
-            filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.5)); margin: 10px 0; font-variant-numeric: tabular-nums;
+            filter: drop-shadow(0 0 25px var(--glow-orange)); margin: 15px 0; font-variant-numeric: tabular-nums;
         }
-        .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.6; }
+        .sub-text { font-size: 1.1rem; color: var(--map-blue); opacity: 0.5; font-style: italic; }
         
-        .progress-box { width: 100%; margin-top: 40px; position: relative; }
-        .bar-container { height: 2px; background: #0f172a; border-radius: 10px; }
-        .bar-fill { height: 100%; width: 0%; background: var(--deep-orange); box-shadow: 0 0 10px var(--deep-orange); border-radius: 10px; }
-        .clock-wrapper { position: absolute; top: 12px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
-        #clock { color: var(--deep-orange); font-size: 0.9rem; font-weight: bold; font-variant-numeric: tabular-nums; }
+        .progress-box { width: 100%; margin-top: 50px; position: relative; }
+        .bar-container { height: 3px; background: rgba(56, 189, 248, 0.1); border-radius: 10px; }
+        .bar-fill { height: 100%; width: 0%; background: var(--deep-orange); box-shadow: 0 0 15px var(--deep-orange); }
+        .clock-wrapper { position: absolute; top: 15px; left: 0%; transform: translateX(-50%); white-space: nowrap; }
+        #clock { color: var(--deep-orange); font-size: 1rem; font-weight: bold; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
 
         .globe-panel { 
             flex: 1; height: 100%; position: relative; 
             display: flex; align-items: center; justify-content: flex-end; 
             overflow: hidden;
-            background: radial-gradient(circle at center, #0a1424 0%, #050a12 80%);
-            /* Shift globe right approx 1cm */
-            transform: translateX(40px);
+            transform: translateX(50px);
         }
         
         #globeViz { width: 100%; height: 100%; }
 
         #loading-overlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            z-index: 2000; color: var(--map-blue);
-            transition: opacity 0.5s;
+            z-index: 2000; color: var(--map-blue); transition: opacity 1s;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <!-- Updated Heading -->
+    <canvas id="space-canvas"></canvas>
     <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
 
     <div class="container">
         <div class="stats-panel">
-            <!-- Updated Label -->
             <div class="label">Global Births Today</div>
             <div id="birthCount" class="count">0</div>
             <div class="sub-text">new lives welcomed since midnight</div>
@@ -97,32 +97,110 @@
 
         <div class="globe-panel">
             <div id="loading-overlay">
-                <div style="letter-spacing: 5px; font-weight: bold; font-size: 14px;">INITIALIZING</div>
-                <div id="loading-text" style="font-size: 10px; margin-top: 10px; opacity: 0.5;">Loading High-Visibility Map...</div>
+                <div style="letter-spacing: 8px; font-weight: bold; font-size: 18px;">INITIALIZING COSMOS</div>
             </div>
             <div id="globeViz"></div>
         </div>
     </div>
 
     <script>
-        const countryShares = {
-            IND: 18.29, CHN: 17.69, USA: 4.34, IDN: 3.57, PAK: 3.19, NGA: 2.97, BRA: 2.66, BGD: 2.19, RUS: 1.80, ETH: 1.69, MEX: 1.65, JPN: 1.54, EGY: 1.48, PHL: 1.46, COD: 1.41, VNM: 1.27, IRN: 1.15, TUR: 1.10, DEU: 1.05, THA: 0.89, TZA: 0.88, GBR: 0.87, FRA: 0.83, ZAF: 0.81, ITA: 0.74, KEN: 0.72, MMR: 0.69, COL: 0.67, KOR: 0.65, SDN: 0.65, UGA: 0.64, ESP: 0.60, DZA: 0.59, IRQ: 0.59, ARG: 0.57, AFG: 0.55, YEM: 0.52, CAN: 0.50, AGO: 0.49, UKR: 0.49, MAR: 0.48, POL: 0.48, UZB: 0.46, MYS: 0.45, MOZ: 0.45, GHA: 0.44, PER: 0.43, SAU: 0.43, MDG: 0.41, CIV: 0.41, CMR: 0.37, NPL: 0.37, VEN: 0.36, NER: 0.35, AUS: 0.34, PRK: 0.33, SYR: 0.32, MLI: 0.31, BFA: 0.30, MWI: 0.28, ZMB: 0.27, TCD: 0.26, KAZ: 0.26, CHL: 0.25, SOM: 0.25, SEN: 0.24, ROU: 0.24, GTM: 0.23, NLD: 0.23, ECU: 0.23, KHM: 0.22, ZWE: 0.21, GIN: 0.19, BEN: 0.19, RWA: 0.18, BDI: 0.18, BOL: 0.16, TUN: 0.15, SSD: 0.15, HTI: 0.15, BEL: 0.15, JOR: 0.14, DOM: 0.14, ARE: 0.14, HND: 0.14, CUB: 0.14, TJK: 0.13, PNG: 0.13, SWE: 0.13, CZE: 0.13, PRT: 0.13, AZE: 0.13, GRC: 0.12, TGO: 0.12, HUN: 0.12, ISR: 0.12, AUT: 0.11, BLR: 0.11, CHE: 0.11, SLE: 0.11, LAO: 0.10, TKM: 0.10, LBY: 0.09, HKG: 0.09, KGZ: 0.09, PRY: 0.09, NIC: 0.09, BGR: 0.08, SRB: 0.08, COG: 0.08, SLV: 0.08, DNK: 0.07, SGP: 0.07, LBN: 0.07, LBR: 0.07, FIN: 0.07, NOR: 0.07, PSE: 0.07, CAF: 0.07, OMN: 0.07, SVK: 0.07, MRT: 0.07, IRL: 0.07, NZL: 0.07, CRI: 0.06, KWT: 0.06, PAN: 0.06, HRV: 0.05, GEO: 0.05, ERI: 0.05, MNG: 0.04, URU: 0.04, PRI: 0.04, BIH: 0.04, QAT: 0.04, NAM: 0.04, MDA: 0.04, ARM: 0.04, JAM: 0.04, LTU: 0.04, GMB: 0.04, ALB: 0.03, GAB: 0.03, BWA: 0.03, LSO: 0.03, GNB: 0.03, SVN: 0.03, GNQ: 0.02, LVA: 0.02, MKD: 0.02, BHR: 0.02, TTO: 0.02, TLS: 0.02, CYP: 0.02, EST: 0.02, MUS: 0.02, SWZ: 0.02, DJB: 0.01, FJI: 0.01, COM: 0.01, REU: 0.01, SLB: 0.01, GUY: 0.01, BTN: 0.01, MAC: 0.01, LUX: 0.01, SUR: 0.01, MNE: 0.01, ESH: 0.01, MLT: 0.01, MDV: 0.01, CPV: 0.01, BRN: 0.01, BLZ: 0.01, BHS: 0.01, ISL: 0.01, GLP: 0.01, MTQ: 0.01, MYT: 0.01, VUT: 0.01, GUF: 0.01, NCL: 0.01, BRB: 0.01, PYF: 0.01, STP: 0.01, WSM: 0.01, CUW: 0.01, LCA: 0.01, GUM: 0.01, KIR: 0.01, SYC: 0.01, GRD: 0.01, FSM: 0.01, ABW: 0.01, JEY: 0.01, TON: 0.01, VCT: 0.01, ATG: 0.01, VIR: 0.01, IMN: 0.01, AND: 0.01, CYM: 0.01, DMA: 0.01, BMU: 0.01, GGY: 0.01, FRO: 0.01, GRL: 0.01, KNA: 0.01, TCA: 0.01, ASM: 0.01, SXM: 0.01, MNP: 0.01, LIE: 0.01, GIB: 0.01, VGB: 0.01, MCO: 0.01, MHL: 0.01, SMR: 0.01, MAF: 0.01, PLW: 0.01, AIA: 0.01, COK: 0.01, NRU: 0.01, BLM: 0.01, WLF: 0.01, TUV: 0.01, SPM: 0.01, SHN: 0.01, MSR: 0.01, FLK: 0.01, TKL: 0.01, NIU: 0.01, VAT: 0.0
-        };
+        // --- SPACE ENGINE (STARS & RARE COMETS) ---
+        const canvas = document.getElementById('space-canvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [], comets = [];
+
+        function initSpace() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            stars = [];
+            for(let i=0; i<350; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.2,
+                    blinkSpeed: 0.005 + Math.random() * 0.02,
+                    opacity: Math.random(),
+                    increasing: Math.random() > 0.5
+                });
+            }
+        }
+
+        function createComet() {
+            // Reduced frequency: only 0.2% chance per frame (approx once every 8-10 seconds)
+            if (Math.random() > 0.998) { 
+                const angle = (Math.random() * 45 + 135) * (Math.PI / 180); // Diagonal path
+                const speed = 12 + Math.random() * 10;
+                comets.push({
+                    x: Math.random() * canvas.width,
+                    y: -50,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    opacity: 1.0,
+                    trailLength: 20 + Math.random() * 30
+                });
+            }
+        }
+
+        function drawSpace() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Stars
+            stars.forEach(s => {
+                if (s.increasing) s.opacity += s.blinkSpeed;
+                else s.opacity -= s.blinkSpeed;
+                if (s.opacity > 1) s.increasing = false;
+                if (s.opacity < 0.1) s.increasing = true;
+                
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity * 0.8})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Realistic Comets
+            comets.forEach((c, i) => {
+                // Draw Tail (Gradient)
+                const grad = ctx.createLinearGradient(c.x, c.y, c.x - c.vx * 2, c.y - c.vy * 2);
+                grad.addColorStop(0, `rgba(255, 255, 255, ${c.opacity})`);
+                grad.addColorStop(1, `rgba(100, 150, 255, 0)`);
+                
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(c.x, c.y);
+                ctx.lineTo(c.x - c.vx * 4, c.y - c.vy * 4);
+                ctx.stroke();
+
+                // Draw Head (Point)
+                ctx.fillStyle = `rgba(255, 255, 255, ${c.opacity})`;
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, 1, 0, Math.PI * 2);
+                ctx.fill();
+
+                c.x += c.vx;
+                c.y += c.vy;
+                c.opacity -= 0.008; // Slower fade out
+                if (c.opacity <= 0) comets.splice(i, 1);
+            });
+
+            createComet();
+            requestAnimationFrame(drawSpace);
+        }
+
+        // --- GLOBE LOGIC ---
+        const countryShares = { IND: 18.29, CHN: 17.69, USA: 4.34, IDN: 3.57, PAK: 3.19, NGA: 2.97, BRA: 2.66, BGD: 2.19, RUS: 1.80, ETH: 1.69, MEX: 1.65, JPN: 1.54, EGY: 1.48, PHL: 1.46, COD: 1.41, VNM: 1.27, IRN: 1.15, TUR: 1.10, DEU: 1.05, THA: 0.89, TZA: 0.88, GBR: 0.87, FRA: 0.83, ZAF: 0.81, ITA: 0.74, KEN: 0.72, MMR: 0.69, COL: 0.67, KOR: 0.65, SDN: 0.65, UGA: 0.64, ESP: 0.60, DZA: 0.59, IRQ: 0.59, ARG: 0.57, AFG: 0.55, YEM: 0.52, CAN: 0.50, AGO: 0.49, UKR: 0.49, MAR: 0.48, POL: 0.48, UZB: 0.46, MYS: 0.45, MOZ: 0.45, GHA: 0.44, PER: 0.43, SAU: 0.43, MDG: 0.41, CIV: 0.41, CMR: 0.37, NPL: 0.37, VEN: 0.36, NER: 0.35, AUS: 0.34, PRK: 0.33, SYR: 0.32, MLI: 0.31, BFA: 0.30, MWI: 0.28, ZMB: 0.27, TCD: 0.26, KAZ: 0.26, CHL: 0.25, SOM: 0.25, SEN: 0.24, ROU: 0.24, GTM: 0.23, NLD: 0.23, ECU: 0.23, KHM: 0.22, ZWE: 0.21, GIN: 0.19, BEN: 0.19, RWA: 0.18, BDI: 0.18, BOL: 0.16, TUN: 0.15, SSD: 0.15, HTI: 0.15, BEL: 0.15, JOR: 0.14, DOM: 0.14, ARE: 0.14, HND: 0.14, CUB: 0.14, TJK: 0.13, PNG: 0.13, SWE: 0.13, CZE: 0.13, PRT: 0.13, AZE: 0.13, GRC: 0.12, TGO: 0.12, HUN: 0.12, ISR: 0.12, AUT: 0.11, BLR: 0.11, CHE: 0.11, SLE: 0.11, LAO: 0.10, TKM: 0.10, LBY: 0.09, HKG: 0.09, KGZ: 0.09, PRY: 0.09, NIC: 0.09, BGR: 0.08, SRB: 0.08, COG: 0.08, SLV: 0.08, DNK: 0.07, SGP: 0.07, LBN: 0.07, LBR: 0.07, FIN: 0.07, NOR: 0.07, PSE: 0.07, CAF: 0.07, OMN: 0.07, SVK: 0.07, MRT: 0.07, IRL: 0.07, NZL: 0.07, CRI: 0.06, KWT: 0.06, PAN: 0.06, HRV: 0.05, GEO: 0.05, ERI: 0.05, MNG: 0.04, URU: 0.04, PRI: 0.04, BIH: 0.04, QAT: 0.04, NAM: 0.04, MDA: 0.04, ARM: 0.04, JAM: 0.04, LTU: 0.04, GMB: 0.04, ALB: 0.03, GAB: 0.03, BWA: 0.03, LSO: 0.03, GNB: 0.03, SVN: 0.03, GNQ: 0.02, LVA: 0.02, MKD: 0.02, BHR: 0.02, TTO: 0.02, TLS: 0.02, CYP: 0.02, EST: 0.02, MUS: 0.02, SWZ: 0.02, DJB: 0.01, FJI: 0.01, COM: 0.01, REU: 0.01, SLB: 0.01, GUY: 0.01, BTN: 0.01, MAC: 0.01, LUX: 0.01, SUR: 0.01, MNE: 0.01, ESH: 0.01, MLT: 0.01, MDV: 0.01, CPV: 0.01, BRN: 0.01, BLZ: 0.01, BHS: 0.01, ISL: 0.01, GLP: 0.01, MTQ: 0.01, MYT: 0.01, VUT: 0.01, GUF: 0.01, NCL: 0.01, BRB: 0.01, PYF: 0.01, STP: 0.01, WSM: 0.01, CUW: 0.01, LCA: 0.01, GUM: 0.01, KIR: 0.01, SYC: 0.01, GRD: 0.01, FSM: 0.01, ABW: 0.01, JEY: 0.01, TON: 0.01, VCT: 0.01, ATG: 0.01, VIR: 0.01, IMN: 0.01, AND: 0.01, CYM: 0.01, DMA: 0.01, BMU: 0.01, GGY: 0.01, FRO: 0.01, GRL: 0.01, KNA: 0.01, TCA: 0.01, ASM: 0.01, SXM: 0.01, MNP: 0.01, LIE: 0.01, GIB: 0.01, VGB: 0.01, MCO: 0.01, MHL: 0.01, SMR: 0.01, MAF: 0.01, PLW: 0.01, AIA: 0.01, COK: 0.01, NRU: 0.01, BLM: 0.01, WLF: 0.01, TUV: 0.01, SPM: 0.01, SHN: 0.01, MSR: 0.01, FLK: 0.01, TKL: 0.01, NIU: 0.01, VAT: 0.0 };
 
         const DAILY_BIRTHS = 367000;
         const BIRTH_RATE = DAILY_BIRTHS / 86400000;
-        const FADE_DURATION = 2500; 
+        const FADE_DURATION = 3500; 
 
         const birthCountEl = document.getElementById('birthCount');
         const clockEl = document.getElementById('clock');
         const barEl = document.getElementById('bar');
         const clockWrapperEl = document.getElementById('clockWrapper');
-        const loadingOverlay = document.getElementById('loading-overlay');
         const globeContainer = document.getElementById('globeViz');
 
-        let worldData = []; 
-        let flashingCountries = new Map(); 
-        let globe;
+        let worldData = [], flashingCountries = new Map(), globe;
 
         function startSimulation() {
             let lastT = Date.now(), carry = 0;
@@ -146,12 +224,12 @@
             if (worldData.length === 0) return;
             const totalWeight = worldData.reduce((sum, item) => sum + item.properties.weight, 0);
             let r = Math.random() * totalWeight;
-            let selectedCountry = null;
+            let selected = null;
             for (let f of worldData) {
                 r -= f.properties.weight;
-                if (r <= 0) { selectedCountry = f; break; }
+                if (r <= 0) { selected = f; break; }
             }
-            if (selectedCountry) flashingCountries.set(selectedCountry.properties.isoCode, Date.now());
+            if (selected) flashingCountries.set(selected.properties.isoCode, Date.now());
         }
 
         function updateUI() {
@@ -166,59 +244,55 @@
 
         function initGlobe(countries) {
             countries.features.forEach(f => {
-                const props = f.properties;
-                let iso = props.ISO_A3 || props.ADM0_A3 || props.GU_A3;
-                if (iso === "-99" || !iso) {
-                    const name = props.NAME || props.ADMIN;
-                    if (name === "France") iso = "FRA";
-                    else if (name === "Norway") iso = "NOR";
-                }
+                let iso = f.properties.ISO_A3 || f.properties.ADM0_A3;
                 f.properties.isoCode = iso;
-                f.properties.weight = countryShares[iso] || 0.02;
+                f.properties.weight = countryShares[iso] || 0.01;
                 worldData.push(f);
             });
 
-            try {
-                globe = Globe()
-                    .width(globeContainer.clientWidth) 
-                    .height(globeContainer.clientHeight)
-                    .backgroundColor('rgba(0,0,0,0)')
-                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg') 
-                    .polygonsData(countries.features)
-                    .polygonSideColor(() => 'rgba(0,0,0,0)')
-                    .polygonStrokeColor(() => 'rgba(56, 189, 248, 0.7)') // Clearer border
-                    .polygonCapColor(d => {
-                        const startTime = flashingCountries.get(d.properties.isoCode);
-                        if (startTime) {
-                            const elapsed = Date.now() - startTime;
-                            const opacity = 1 - Math.min(elapsed / FADE_DURATION, 1);
-                            return `rgba(245, 158, 11, ${0.4 + (opacity * 0.6)})`;
-                        }
-                        return 'rgba(30, 58, 138, 0.4)'; // Clear land visibility
-                    })
-                    .polygonAltitude(d => flashingCountries.has(d.properties.isoCode) ? 0.025 : 0.005)
-                    (document.getElementById('globeViz'));
+            globe = Globe()
+                .width(globeContainer.clientWidth)
+                .height(globeContainer.clientHeight)
+                .backgroundColor('rgba(0,0,0,0)')
+                .showAtmosphere(true)
+                .atmosphereColor('#38bdf8')
+                .atmosphereAltitude(0.12)
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg') 
+                .polygonsData(countries.features)
+                .polygonSideColor(() => 'rgba(0,0,0,0)')
+                .polygonStrokeColor(() => 'rgba(56, 189, 248, 0.4)')
+                .polygonCapColor(d => {
+                    const startTime = flashingCountries.get(d.properties.isoCode);
+                    if (startTime) {
+                        const elapsed = Date.now() - startTime;
+                        const p = Math.min(elapsed / FADE_DURATION, 1);
+                        return `rgba(251, 191, 36, ${0.8 * (1 - p)})`;
+                    }
+                    return 'rgba(30, 58, 138, 0.3)';
+                })
+                .polygonAltitude(d => flashingCountries.has(d.properties.isoCode) ? 0.025 : 0.01)
+                (document.getElementById('globeViz'));
 
-                globe.controls().autoRotate = true;
-                globe.controls().autoRotateSpeed = 0.5; 
-                globe.controls().enableZoom = true;
-                globe.pointOfView({ lat: 20, lng: 50, altitude: 1.8 }); 
+            globe.controls().autoRotate = true;
+            globe.controls().autoRotateSpeed = 0.4;
+            globe.pointOfView({ lat: 15, lng: 40, altitude: 2.1 });
 
-                window.addEventListener('resize', () => {
-                    globe.width(globeContainer.clientWidth);
-                    globe.height(globeContainer.clientHeight);
-                });
-
-                loadingOverlay.style.opacity = '0';
-                setTimeout(() => loadingOverlay.style.display = 'none', 500);
-                startSimulation();
-
-            } catch (e) { console.error(e); }
+            document.getElementById('loading-overlay').style.opacity = '0';
+            initSpace();
+            drawSpace();
+            startSimulation();
         }
 
+        window.addEventListener('resize', () => {
+            initSpace();
+            if(globe) {
+                globe.width(window.innerWidth);
+                globe.height(window.innerHeight);
+            }
+        });
+
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
-            .then(r => r.json())
-            .then(initGlobe);
+            .then(r => r.json()).then(initGlobe);
     </script>
 </body>
 </html>
