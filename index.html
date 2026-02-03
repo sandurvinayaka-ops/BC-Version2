@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Cinematic TV Edition</title>
+    <title>Birth Pulse 2025 - Cinematic TV Pro</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         body, html {
@@ -12,7 +12,7 @@
             font-family: Arial, Helvetica, sans-serif; color: white;
         }
 
-        /* HARDWARE ACCELERATED STARFIELD */
+        /* HARDWARE ACCELERATED STARS (Zero CPU Load) */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #0f172a 0%, #010409 100%);
@@ -20,15 +20,15 @@
         }
         .star {
             position: absolute; background: white; border-radius: 50%;
-            animation: blink var(--t) infinite ease-in-out;
+            animation: twinkle var(--t) infinite ease-in-out;
             will-change: opacity;
         }
-        @keyframes blink { 
+        @keyframes twinkle { 
             0%, 100% { opacity: 0.1; transform: scale(0.8); } 
-            50% { opacity: 1; transform: scale(1.1); } 
+            50% { opacity: 0.9; transform: scale(1.1); } 
         }
 
-        /* COMET CANVAS */
+        /* COMET LAYER */
         #comet-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 100; pointer-events: none;
@@ -36,10 +36,10 @@
 
         .main-heading {
             position: absolute; top: 7vh; left: 5vw;
-            font-size: 3vw; color: #a855f7; /* Purple */
+            font-size: 2.8vw; color: #a855f7; /* Purple */
             font-weight: 800; text-transform: uppercase;
             letter-spacing: 2px; z-index: 110;
-            text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+            text-shadow: 0 0 30px rgba(168, 85, 247, 0.7);
             margin: 0;
         }
 
@@ -62,7 +62,7 @@
         #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; display: block; margin-top: 15px; letter-spacing: 2px; }
 
         .globe-panel { 
-            position: absolute; right: -12vw; width: 80vw; height: 100vh; z-index: 5; 
+            position: absolute; right: -15vw; width: 85vw; height: 100vh; z-index: 5; 
         }
 
         #loading {
@@ -74,7 +74,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING CINEMATIC SPACE...</div>
+    <div id="loading">OPTIMIZING CINEMATIC WORLD...</div>
     <div class="stars-container" id="stars-bg"></div>
     <canvas id="comet-canvas"></canvas>
     
@@ -92,14 +92,14 @@
     </div>
 
     <script>
-        // TV-SAFE VARIABLES
+        // TV-SAFE VARIABLES (ES5)
         var BIRTH_RATE = 367000 / 86400000;
         var worldData = [];
         var flashingISO = {}; 
         var globe;
         var isDirty = false;
 
-        // --- REALISTIC CSS STARS ---
+        // --- CSS SHIMMERING STARS ---
         function initStars() {
             var bg = document.getElementById('stars-bg');
             for(var i=0; i<100; i++) {
@@ -109,12 +109,12 @@
                 s.style.top = Math.random()*100 + '%';
                 var size = (1 + Math.random()*2.5) + 'px';
                 s.style.width = size; s.style.height = size;
-                s.style.setProperty('--t', (2 + Math.random()*4) + 's');
+                s.style.setProperty('--t', (2 + Math.random()*5) + 's');
                 bg.appendChild(s);
             }
         }
 
-        // --- REALISTIC COMET ENGINE ---
+        // --- MOTION-BLUR COMETS ---
         var cCanvas = document.getElementById('comet-canvas');
         var cCtx = cCanvas.getContext('2d');
         var comets = [];
@@ -124,13 +124,13 @@
             cCanvas.height = window.innerHeight;
             cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
             
-            if (Math.random() > 0.997) {
-                comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -12, vy: 10, life: 1 });
+            if (Math.random() > 0.996) {
+                comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -15, vy: 12, life: 1 });
             }
 
             for(var i=0; i<comets.length; i++) {
                 var c = comets[i];
-                var grad = cCtx.createLinearGradient(c.x, c.y, c.x + 80, c.y - 60);
+                var grad = cCtx.createLinearGradient(c.x, c.y, c.x + 100, c.y - 80);
                 grad.addColorStop(0, "rgba(255, 255, 255," + c.life + ")");
                 grad.addColorStop(1, "rgba(168, 85, 247, 0)");
                 
@@ -138,23 +138,23 @@
                 cCtx.lineWidth = 4;
                 cCtx.beginPath();
                 cCtx.moveTo(c.x, c.y);
-                cCtx.lineTo(c.x + 100, c.y - 80);
+                cCtx.lineTo(c.x + 120, c.y - 100);
                 cCtx.stroke();
                 
-                c.x += c.vx; c.y += c.vy; c.life -= 0.008;
+                c.x += c.vx; c.y += c.vy; c.life -= 0.007;
                 if(c.life <= 0) { comets.splice(i, 1); i--; }
             }
             requestAnimationFrame(drawComets);
         }
 
-        // --- SIMULATION LOGIC ---
+        // --- COUNTER LOGIC ---
         function startSim() {
             setInterval(function() {
                 var now = new Date();
                 var start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 var num = Math.floor((now - start) * BIRTH_RATE);
                 
-                // DOT format for counter
+                // Dot Separator for counter
                 var formatted = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('birthCount').innerText = formatted;
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
@@ -172,14 +172,12 @@
                 while (carry >= 1) {
                     if (worldData.length > 0) {
                         var idx = Math.floor(Math.random() * worldData.length);
-                        var iso = worldData[idx].properties.isoCode;
-                        flashingISO[iso] = now;
+                        flashingISO[worldData[idx].properties.isoCode] = now;
                         isDirty = true;
                     }
                     carry--;
                 }
 
-                // Remove expired flashes
                 for (var key in flashingISO) {
                     if (now - flashingISO[key] > 2500) {
                         delete flashingISO[key];
@@ -187,11 +185,10 @@
                     }
                 }
 
-                // PERFORMANCE SECRET: Only update map color when a change happens
-                // This keeps rotation smooth on Philips TVs
+                // Smooth Rotation Fix: Only update colors on a birth trigger
                 if (isDirty && globe) {
                     globe.polygonCapColor(function(d) {
-                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 0.9)' : 'rgba(109, 40, 217, 0.6)';
+                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 0.9)' : 'rgba(109, 40, 217, 0.4)';
                     });
                     isDirty = false;
                 }
@@ -200,7 +197,7 @@
             loop();
         }
 
-        // --- INITIALIZE ---
+        // --- INIT GLOBE ---
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
             .then(function(res) { return res.json(); })
             .then(function(data) {
@@ -213,24 +210,25 @@
                     .width(document.querySelector('.globe-panel').clientWidth)
                     .height(window.innerHeight)
                     .backgroundColor('rgba(0,0,0,0)')
-                    // REALISTIC OCEAN MAP
+                    // REALISTIC OCEAN TEXTURE
                     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
                     .showAtmosphere(true)
                     .atmosphereColor('#a855f7')
-                    .atmosphereAltitude(0.18)
+                    .atmosphereAltitude(0.15)
                     .polygonsData(worldData)
                     .polygonSideColor(function() { return 'rgba(0,0,0,0)'; })
-                    .polygonStrokeColor(function() { return 'rgba(168, 85, 247, 0.25)'; })
-                    .polygonCapColor(function() { return 'rgba(109, 40, 217, 0.6)'; })
+                    .polygonStrokeColor(function() { return 'rgba(168, 85, 247, 0.2)'; })
+                    .polygonCapColor(function() { return 'rgba(109, 40, 217, 0.4)'; })
                     .polygonAltitude(function(d) { return flashingISO[d.properties.isoCode] ? 0.03 : 0.01; });
 
-                // PERFORMANCE OPTIMIZATION FOR TV
+                // TV PERFORMANCE OPTIMIZATION
                 globe.renderer().setPixelRatio(1); 
                 globe.controls().autoRotate = true;
                 globe.controls().autoRotateSpeed = 0.5;
                 globe.controls().enableZoom = false;
                 
-                globe.pointOfView({ lat: 10, lng: 10, altitude: 2.15 });
+                // Reduced size (0.9x) by increasing altitude to 2.4
+                globe.pointOfView({ lat: 10, lng: 10, altitude: 2.4 });
 
                 document.getElementById('loading').style.display = 'none';
                 initStars();
