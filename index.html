@@ -3,201 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Cinematic TV Edition</title>
+    <title>Birth Pulse 2025 - TV STABLE</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
-        :root {
-            --bg-color: #010409;
-            --gold-flash: #fbbf24; 
-            --purple-text: #a855f7;
-            --ocean-blue: #060919;
-            --land-purple: rgba(109, 40, 217, 0.7);
-        }
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
-            overflow: hidden; background-color: var(--bg-color);
-            font-family: 'Segoe UI', sans-serif;
-            color: white;
-            transform: translateZ(0); /* TV Hardware acceleration */
+            overflow: hidden; background-color: #010409;
+            font-family: Arial, sans-serif; color: white;
         }
 
-        /* REALISTIC BACKGROUND */
+        /* BACKGROUND - Solid for performance */
         .stars-bg {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #0f172a 0%, #010409 100%);
+            background: radial-gradient(circle at 50% 50%, #0f172a 0%, #010409 100%);
             z-index: 1;
-        }
-        .star {
-            position: absolute; background: white; border-radius: 50%;
-            animation: twinkle var(--t) infinite ease-in-out;
-        }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.9); } 50% { opacity: 0.8; transform: scale(1.1); } }
-
-        #comet-canvas {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 100; pointer-events: none;
         }
 
         .main-heading {
             position: absolute; top: 7vh; left: 5vw;
-            font-size: 2.8vw; color: var(--purple-text);
+            font-size: 2.8vw; color: #a855f7; /* Purple */
             font-weight: 800; text-transform: uppercase;
             letter-spacing: 2px; z-index: 110;
-            text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
+            margin: 0;
         }
 
         .stats-panel { 
             position: absolute; top: 25vh; left: 6vw; width: 33vw; z-index: 120;
-            display: flex; flex-direction: column; justify-content: center;
         }
 
         .count {
-            font-size: 8.5vw; font-weight: 900; color: var(--gold-flash); line-height: 1.1;
-            filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.5)); margin: 1vh 0; 
-            font-variant-numeric: tabular-nums;
+            font-size: 8.5vw; font-weight: 900; color: #fbbf24; /* Gold */
+            line-height: 1.1; margin: 1vh 0; 
         }
         
-        .progress-box { width: 90%; margin-top: 4vh; }
-        .bar-container { height: 10px; background: rgba(168, 85, 247, 0.2); border-radius: 20px; }
-        .bar-fill { height: 100%; width: 0%; background: var(--gold-flash); box-shadow: 0 0 15px var(--gold-flash); border-radius: 20px;}
-        #clock { color: var(--gold-flash); font-size: 1.8vw; font-weight: bold; display: block; margin-top: 15px; letter-spacing: 2px; }
+        .bar-container { width: 90%; height: 10px; background: rgba(168, 85, 247, 0.2); border-radius: 20px; margin-top: 30px;}
+        .bar-fill { height: 100%; width: 0%; background: #fbbf24; border-radius: 20px;}
+        #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; display: block; margin-top: 15px; letter-spacing: 2px; }
 
         .globe-panel { 
             position: absolute; right: -12vw; width: 80vw; height: 100vh; z-index: 5; 
         }
-        
-        #globeViz { width: 100%; height: 100%; outline: none; }
 
         #loading {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); display: flex; align-items: center; 
+            position: absolute; width: 100%; height: 100%;
+            background: #010409; display: flex; align-items: center; 
             justify-content: center; z-index: 2000; color: #38bdf8; font-size: 2vw;
         }
     </style>
 </head>
 <body>
 
-    <div class="stars-bg" id="stars"></div>
-    <canvas id="comet-canvas"></canvas>
+    <div id="loading">OPTIMIZING FOR PHILIPS TV...</div>
+    <div class="stars-bg"></div>
     
     <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
 
     <div class="stats-panel">
         <div id="birthCount" class="count">0</div>
-        <div class="progress-box">
-            <div class="bar-container"><div id="bar" class="bar-fill"></div></div>
-            <span id="clock">00:00:00</span>
-        </div>
+        <div class="bar-container"><div id="bar" class="bar-fill"></div></div>
+        <span id="clock">00:00:00</span>
     </div>
 
     <div class="globe-panel">
         <div id="globeViz"></div>
     </div>
 
-    <div id="loading">OPTIMIZING FOR PHILIPS TV...</div>
-
     <script>
-        const countryShares = { IND: 18.29, CHN: 17.69, USA: 4.34, IDN: 3.57, PAK: 3.19, NGA: 2.97, BRA: 2.66, BGD: 2.19, RUS: 1.80, ETH: 1.69, MEX: 1.65, JPN: 1.54, EGY: 1.48, PHL: 1.46, COD: 1.41, VNM: 1.27, IRN: 1.15, TUR: 1.10, DEU: 1.05, THA: 0.89, TZA: 0.88, GBR: 0.87, FRA: 0.83, ZAF: 0.81, ITA: 0.74, KEN: 0.72, MMR: 0.69, COL: 0.67, KOR: 0.65, SDN: 0.65, UGA: 0.64, ESP: 0.60, DZA: 0.59, IRQ: 0.59, ARG: 0.57, AFG: 0.55, YEM: 0.52, CAN: 0.50, AGO: 0.49, UKR: 0.49, MAR: 0.48, POL: 0.48, UZB: 0.46, MYS: 0.45, MOZ: 0.45, GHA: 0.44, PER: 0.43, SAU: 0.43, MDG: 0.41, CIV: 0.41, CMR: 0.37, NPL: 0.37, VEN: 0.36, NER: 0.35, AUS: 0.34, PRK: 0.33, SYR: 0.32, MLI: 0.31, BFA: 0.30, MWI: 0.28, ZMB: 0.27, TCD: 0.26, KAZ: 0.26, CHL: 0.25, SOM: 0.25, SEN: 0.24, ROU: 0.24, GTM: 0.23, NLD: 0.23, ECU: 0.23, KHM: 0.22, ZWE: 0.21, GIN: 0.19, BEN: 0.19, RWA: 0.18, BDI: 0.18, BOL: 0.16, TUN: 0.15, SSD: 0.15, HTI: 0.15, BEL: 0.15, JOR: 0.14, DOM: 0.14, ARE: 0.14, HND: 0.14, CUB: 0.14, TJK: 0.13, PNG: 0.13, SWE: 0.13, CZE: 0.13, PRT: 0.13, AZE: 0.13, GRC: 0.12, TGO: 0.12, HUN: 0.12, ISR: 0.12, AUT: 0.11, BLR: 0.11, CHE: 0.11, SLE: 0.11, LAO: 0.10, TKM: 0.10, LBY: 0.09, HKG: 0.09, KGZ: 0.09, PRY: 0.09, NIC: 0.09, BGR: 0.08, SRB: 0.08, COG: 0.08, SLV: 0.08, DNK: 0.07, SGP: 0.07, LBN: 0.07, LBR: 0.07, FIN: 0.07, NOR: 0.07, PSE: 0.07, CAF: 0.07, OMN: 0.07, SVK: 0.07, MRT: 0.07, IRL: 0.07, NZL: 0.07, CRI: 0.06, KWT: 0.06, PAN: 0.06, HRV: 0.05, GEO: 0.05, ERI: 0.05, MNG: 0.04, URU: 0.04, PRI: 0.04, BIH: 0.04, QAT: 0.04, NAM: 0.04, MDA: 0.04, ARM: 0.04, JAM: 0.04, LTU: 0.04, GMB: 0.04, ALB: 0.03, GAB: 0.03, BWA: 0.03, LSO: 0.03, GNB: 0.03, SVN: 0.03, GNQ: 0.02, LVA: 0.02, MKD: 0.02, BHR: 0.02, TTO: 0.02, TLS: 0.02, CYP: 0.02, EST: 0.02, MUS: 0.02, SWZ: 0.02 };
-        const BIRTH_RATE = 367000 / 86400000;
-        const FADE_TIME = 2500;
+        // Use VAR and standard functions (ES5) for TV compatibility
+        var BIRTH_RATE = 367000 / 86400000;
+        var worldData = [];
+        var flashingISO = {}; // Use object for simple mapping
+        var globe;
 
-        let worldData = [], flashingISO = new Map(), globe, isDirty = false;
-
-        function initStars() {
-            const bg = document.getElementById('stars');
-            for(let i=0; i<80; i++) {
-                const s = document.createElement('div'); s.className = 'star';
-                s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
-                const sz = (1+Math.random()*2)+'px'; s.style.width = sz; s.style.height = sz;
-                s.style.setProperty('--t', (2+Math.random()*4)+'s'); bg.appendChild(s);
-            }
-        }
-
-        const cCanvas = document.getElementById('comet-canvas');
-        const cCtx = cCanvas.getContext('2d');
-        let activeComets = [];
-        function drawComets() {
-            cCanvas.width = window.innerWidth; cCanvas.height = window.innerHeight;
-            cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
-            if (Math.random() > 0.997) activeComets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -12, vy: 10, l: 1 });
-            activeComets.forEach((c, i) => {
-                const g = cCtx.createLinearGradient(c.x, c.y, c.x + 80, c.y - 60);
-                g.addColorStop(0, `rgba(255, 255, 255, ${c.l})`); g.addColorStop(1, 'rgba(168, 85, 247, 0)');
-                cCtx.strokeStyle = g; cCtx.lineWidth = 4; cCtx.lineCap = 'round';
-                cCtx.beginPath(); cCtx.moveTo(c.x, c.y); cCtx.lineTo(c.x + 100, c.y - 80); cCtx.stroke();
-                c.x += c.vx; c.y += c.vy; c.l -= 0.008;
-                if(c.l <= 0) activeComets.splice(i, 1);
-            });
-            requestAnimationFrame(drawComets);
+        function updateUI() {
+            var now = new Date();
+            var start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            var num = Math.floor((now - start) * BIRTH_RATE);
+            
+            // Format with Dots for TV
+            var formatted = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            document.getElementById('birthCount').innerText = formatted;
+            document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
+            document.getElementById('bar').style.width = (((now - start) / 86400000) * 100) + "%";
         }
 
         function startSim() {
-            let lastT = Date.now(), carry = 0;
-            setInterval(() => {
-                const now = new Date();
-                const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                let num = Math.floor((now - start) * BIRTH_RATE);
-                document.getElementById('birthCount').innerText = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
-                document.getElementById('bar').style.width = (((now-start)/86400000)*100) + "%";
-            }, 1000);
+            setInterval(updateUI, 1000);
+
+            var lastT = Date.now();
+            var carry = 0;
 
             function loop() {
-                const now = Date.now();
+                var now = Date.now();
                 carry += (now - lastT) * BIRTH_RATE;
                 lastT = now;
+
+                var trigger = false;
                 while (carry >= 1) {
-                    const idx = Math.floor(Math.random() * worldData.length);
-                    flashingISO.set(worldData[idx].properties.isoCode, now);
-                    carry--; isDirty = true;
+                    if (worldData.length > 0) {
+                        var idx = Math.floor(Math.random() * worldData.length);
+                        var iso = worldData[idx].properties.isoCode;
+                        flashingISO[iso] = now;
+                        trigger = true;
+                    }
+                    carry--;
                 }
-                for(const [iso, start] of flashingISO) {
-                    if(now - start > FADE_TIME) { flashingISO.delete(iso); isDirty = true; }
+
+                // Cleanup old flashes
+                for (var key in flashingISO) {
+                    if (now - flashingISO[key] > 2500) {
+                        delete flashingISO[key];
+                        trigger = true;
+                    }
                 }
-                // PERFORMANCE FIX: Only redraw colors when a birth actually happens.
-                // This makes the rotation smooth on TVs.
-                if (isDirty && globe) { 
-                    globe.polygonCapColor(globe.polygonCapColor()); 
-                    isDirty = false; 
+
+                // Smoothness Fix: Only update colors if a birth actually happened
+                if (trigger && globe) {
+                    globe.polygonCapColor(function(d) {
+                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 0.9)' : 'rgba(109, 40, 217, 0.7)';
+                    });
                 }
                 requestAnimationFrame(loop);
             }
             loop();
         }
 
+        // Fetch using standard functions
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
-            .then(res => res.json()).then(data => {
-                worldData = data.features.map(f => {
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                worldData = data.features.map(function(f) {
                     f.properties.isoCode = f.properties.ISO_A3 || f.properties.ADM0_A3;
                     return f;
                 });
+
+                // Initialize Globe with oceans visible
                 globe = Globe()(document.getElementById('globeViz'))
                     .width(document.querySelector('.globe-panel').clientWidth)
                     .height(window.innerHeight)
                     .backgroundColor('rgba(0,0,0,0)')
-                    .globeColor('#060919') // Deep blue oceans
-                    .showAtmosphere(true).atmosphereColor('#a855f7').atmosphereAltitude(0.2)
+                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg') // Visible Oceans
+                    .showAtmosphere(true)
+                    .atmosphereColor('#a855f7')
+                    .atmosphereAltitude(0.15)
                     .polygonsData(worldData)
-                    .polygonSideColor(() => 'rgba(0,0,0,0)')
-                    .polygonStrokeColor(() => 'rgba(168, 85, 247, 0.4)')
-                    .polygonCapColor(d => {
-                        const start = flashingISO.get(d.properties.isoCode);
-                        if (start) {
-                            const p = 1 - Math.min((Date.now() - start) / FADE_TIME, 1);
-                            return `rgba(251, 191, 36, ${0.4 + p * 0.6})`;
-                        }
-                        return 'rgba(109, 40, 217, 0.7)'; // Translucent Purple Land
-                    })
-                    .polygonAltitude(d => flashingISO.has(d.properties.isoCode) ? 0.03 : 0.01);
-                
+                    .polygonSideColor(function() { return 'rgba(0,0,0,0)'; })
+                    .polygonStrokeColor(function() { return 'rgba(168, 85, 247, 0.3)'; })
+                    .polygonCapColor(function() { return 'rgba(109, 40, 217, 0.7)'; }) // Purple Land
+                    .polygonAltitude(function(d) { return flashingISO[d.properties.isoCode] ? 0.03 : 0.01; });
+
+                // TV PERFORMANCE SETTINGS
+                globe.renderer().setPixelRatio(1); // Stop 4K lag
                 globe.controls().autoRotate = true;
                 globe.controls().autoRotateSpeed = 0.5;
                 globe.controls().enableZoom = false;
-                globe.pointOfView({ lat: 10, lng: 10, altitude: 2.1 });
-                globe.renderer().setPixelRatio(1); /* Smoothness hack for TV */
+                
+                // Camera position to avoid overlap
+                globe.pointOfView({ lat: 10, lng: 10, altitude: 2.2 });
 
+                // Hide loading screen
                 document.getElementById('loading').style.display = 'none';
-                initStars(); drawComets(); startSim();
+                startSim();
             });
     </script>
 </body>
