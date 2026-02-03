@@ -3,28 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Birth Pulse V3 - TV DAYTIME</title>
+    <title>Birth Pulse - Daytime Smooth TV</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
             overflow: hidden; background-color: #010409;
             font-family: Arial, Helvetica, sans-serif; color: white;
-            transform: translateZ(0); /* Force GPU */
         }
 
-        /* REALISTIC SPACE BACKGROUND */
+        /* REALISTIC SPACE (CSS optimized) */
         .stars-bg {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, #0c1e3e 0%, #010409 100%);
+            background: radial-gradient(circle at center, #0c1e3e 0%, #010409 100%);
             z-index: 1;
         }
         .star {
             position: absolute; background: white; border-radius: 50%;
-            animation: blink var(--t) infinite ease-in-out;
-            will-change: opacity;
+            animation: twinkle var(--t) infinite ease-in-out;
         }
-        @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.9; } }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.9; } }
 
         #comet-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -33,41 +31,31 @@
 
         .main-heading {
             position: absolute; top: 5vh; left: 5vw;
-            font-size: 2.8vw; color: #a855f7;
+            font-size: 2.8vw; color: #a855f7; /* Purple */
             font-weight: 800; text-transform: uppercase;
             letter-spacing: 2px; z-index: 110;
             text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
-            margin: 0;
         }
 
-        /* ALIGN TEXT TO LEFT CENTRE */
+        /* LEFT CENTRE ALIGNMENT */
         .stats-panel { 
-            position: absolute; 
-            top: 50%; 
-            left: 6vw; 
-            transform: translateY(-50%);
-            width: 35vw; 
-            z-index: 120;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            position: absolute; top: 50%; left: 6vw; 
+            transform: translateY(-50%); width: 35vw; z-index: 120;
         }
 
         .label { 
             font-size: 1.4vw; color: #38bdf8; 
             text-transform: uppercase; font-weight: bold; letter-spacing: 3px;
-            margin-bottom: 5px;
         }
 
         .count {
-            font-size: 8.5vw; font-weight: 900; color: #fbbf24;
-            line-height: 1; margin: 0; 
-            filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.5));
+            font-size: 8.5vw; font-weight: 900; color: #fbbf24; /* Gold */
+            line-height: 1.1; margin: 1vh 0; 
         }
         
-        .bar-container { width: 95%; height: 14px; background: rgba(168, 85, 247, 0.2); border-radius: 20px; margin-top: 25px;}
+        .bar-container { width: 90%; height: 12px; background: rgba(168, 85, 247, 0.2); border-radius: 20px; margin-top: 20px;}
         .bar-fill { height: 100%; width: 0%; background: #fbbf24; border-radius: 20px; box-shadow: 0 0 15px #fbbf24;}
-        #clock { color: #fbbf24; font-size: 2vw; font-weight: bold; display: block; margin-top: 20px; letter-spacing: 2px; }
+        #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; display: block; margin-top: 15px; }
 
         .globe-panel { 
             position: absolute; right: -15vw; width: 85vw; height: 100vh; z-index: 5; 
@@ -82,7 +70,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING DAYTIME VIEW...</div>
+    <div id="loading">OPTIMIZING FOR TV...</div>
     <div class="stars-bg" id="stars-bg"></div>
     <canvas id="comet-canvas"></canvas>
     
@@ -100,46 +88,45 @@
     </div>
 
     <script>
+        // TV-COMPATIBLE ES5 JAVASCRIPT
         var BIRTH_RATE = 367000 / 86400000;
+        var worldData = [];
+        var flashingISO = {}; 
         var globe;
-        var ringData = [];
+        var isDirty = false;
 
-        // --- CSS STARS (SMOOTHEST ON TV) ---
         function initStars() {
             var bg = document.getElementById('stars-bg');
-            for(var i=0; i<100; i++) {
+            for(var i=0; i<80; i++) {
                 var s = document.createElement('div');
                 s.className = 'star';
                 s.style.left = Math.random()*100 + '%'; s.style.top = Math.random()*100 + '%';
-                var size = (1 + Math.random()*2.5) + 'px';
-                s.style.width = size; s.style.height = size;
+                var sz = (1 + Math.random()*2.5) + 'px';
+                s.style.width = sz; s.style.height = sz;
                 s.style.setProperty('--t', (2 + Math.random()*4) + 's');
                 bg.appendChild(s);
             }
         }
 
-        // --- REALISTIC COMETS ---
         var cCanvas = document.getElementById('comet-canvas');
         var cCtx = cCanvas.getContext('2d');
         var comets = [];
         function drawComets() {
             cCanvas.width = window.innerWidth; cCanvas.height = window.innerHeight;
             cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
-            if (Math.random() > 0.997) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -14, vy: 11, life: 1 });
+            if (Math.random() > 0.997) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -14, vy: 10, l: 1 });
             for(var i=0; i<comets.length; i++) {
                 var c = comets[i];
-                var grad = cCtx.createLinearGradient(c.x, c.y, c.x + 90, c.y - 70);
-                grad.addColorStop(0, "rgba(255, 255, 255," + c.life + ")");
-                grad.addColorStop(1, "rgba(0, 0, 0, 0)");
-                cCtx.strokeStyle = grad; cCtx.lineWidth = 4; cCtx.lineCap = "round";
-                cCtx.beginPath(); cCtx.moveTo(c.x, c.y); cCtx.lineTo(c.x + 110, c.y - 85); cCtx.stroke();
-                c.x += c.vx; c.y += c.vy; c.life -= 0.007;
-                if(c.life <= 0) { comets.splice(i, 1); i--; }
+                var g = cCtx.createLinearGradient(c.x, c.y, c.x+80, c.y-60);
+                g.addColorStop(0, "rgba(255,255,255,"+c.l+")"); g.addColorStop(1, "rgba(168,85,247,0)");
+                cCtx.strokeStyle = g; cCtx.lineWidth = 4; cCtx.beginPath();
+                cCtx.moveTo(c.x, c.y); cCtx.lineTo(c.x+100, c.y-80); cCtx.stroke();
+                c.x += c.vx; c.y += c.vy; c.l -= 0.008;
+                if(c.l <= 0) { comets.splice(i, 1); i--; }
             }
             requestAnimationFrame(drawComets);
         }
 
-        // --- SIMULATION ---
         function startSim() {
             setInterval(function() {
                 var now = new Date();
@@ -156,47 +143,57 @@
                 var now = Date.now();
                 carry += (now - lastT) * BIRTH_RATE;
                 lastT = now;
+                var changed = false;
                 while (carry >= 1) {
-                    // Create Ring Flash (Much smoother than coloring polygons)
-                    ringData.push({ lat: (Math.random()-0.5)*120, lng: (Math.random()-0.5)*360 });
-                    if (ringData.length > 10) ringData.shift();
-                    if (globe) globe.ringsData(ringData);
+                    if (worldData.length > 0) {
+                        var idx = Math.floor(Math.random() * worldData.length);
+                        flashingISO[worldData[idx].properties.isoCode] = now;
+                        changed = true;
+                    }
                     carry--;
+                }
+                for (var k in flashingISO) {
+                    if (now - flashingISO[k] > 2000) { delete flashingISO[k]; changed = true; }
+                }
+                // PERFORMANCE FIX: Only update colors on birth trigger. Keeps rotation smooth.
+                if (changed && globe) {
+                    globe.polygonCapColor(function(d) {
+                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 0.9)' : 'rgba(109, 40, 217, 0.5)';
+                    });
                 }
                 requestAnimationFrame(loop);
             }
             loop();
         }
 
-        // --- INITIALIZE ---
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
             .then(function(res) { return res.json(); })
             .then(function(data) {
+                worldData = data.features.map(function(f) {
+                    f.properties.isoCode = f.properties.ISO_A3 || f.properties.ADM0_A3;
+                    return f;
+                });
+
                 globe = Globe()(document.getElementById('globeViz'))
                     .width(document.querySelector('.globe-panel').clientWidth)
                     .height(window.innerHeight)
                     .backgroundColor('rgba(0,0,0,0)')
-                    // DAYTIME TEXTURE (Blue Marble)
+                    // DAYTIME BLUE MARBLE TEXTURE
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.15)
-                    .polygonsData(data.features)
-                    .polygonCapColor(function() { return 'rgba(168, 85, 247, 0.4)'; }) // Purple Land
-                    .polygonStrokeColor(function() { return 'rgba(255, 255, 255, 0.2)'; })
-                    .ringsData(ringData)
-                    .ringColor(function() { return '#fbbf24'; }) // GOLD FLASHES
-                    .ringMaxRadius(10)
-                    .ringPropagationSpeed(3)
-                    .ringRepeatPeriod(1000);
+                    .polygonsData(worldData)
+                    .polygonSideColor(function() { return 'rgba(0,0,0,0)'; })
+                    .polygonStrokeColor(function() { return 'rgba(255, 255, 255, 0.3)'; })
+                    .polygonCapColor(function() { return 'rgba(109, 40, 217, 0.5)'; }) /* Translucent Purple */
+                    .polygonAltitude(function(d) { return flashingISO[d.properties.isoCode] ? 0.03 : 0.01; });
 
-                // PERFORMANCE FOR TV
-                globe.renderer().setPixelRatio(1);
-                globe.renderer().antialias = false; // Turn off antialiasing for maximum speed
+                globe.renderer().setPixelRatio(1); /* Optimization for 4K TVs */
                 globe.controls().autoRotate = true;
                 globe.controls().autoRotateSpeed = 0.5;
                 globe.controls().enableZoom = false;
                 
-                // Position and Size (0.9x = Altitude 2.35)
-                globe.pointOfView({ lat: 10, lng: 10, altitude: 2.35 });
+                /* Position right and 0.9x size (Altitude 2.5) */
+                globe.pointOfView({ lat: 10, lng: 10, altitude: 2.5 });
 
                 document.getElementById('loading').style.display = 'none';
                 initStars(); drawComets(); startSim();
