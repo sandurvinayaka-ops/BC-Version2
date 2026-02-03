@@ -1,9 +1,9 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Smooth TV Daytime Pro</title>
+    <title>Birth Pulse - TV Ultimate Smooth</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         body, html {
@@ -12,7 +12,7 @@
             font-family: Arial, Helvetica, sans-serif; color: white;
         }
 
-        /* REALISTIC SHIMMER STARS (CPU: 0%) */
+        /* REALISTIC SPACE (Zero CPU Load) */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #0c1e3e 0%, #010409 100%);
@@ -28,7 +28,6 @@
             50% { opacity: 0.8; transform: scale(1.1); } 
         }
 
-        /* COMET LAYER */
         #comet-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 100; pointer-events: none;
@@ -36,14 +35,14 @@
 
         .main-heading {
             position: absolute; top: 5vh; left: 5vw;
-            font-size: 2.8vw; color: #a855f7; /* Purple */
+            font-size: 2.8vw; color: #a855f7; 
             font-weight: 800; text-transform: uppercase;
             letter-spacing: 2px; z-index: 110;
             text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
             margin: 0;
         }
 
-        /* PERFECT LEFT CENTRE ALIGNMENT */
+        /* LEFT CENTRE ALIGNMENT */
         .stats-panel { 
             position: absolute; top: 50%; left: 6vw; 
             transform: translateY(-50%); width: 35vw; z-index: 120;
@@ -57,7 +56,7 @@
         }
 
         .count {
-            font-size: 8.5vw; font-weight: 900; color: #fbbf24; /* Gold */
+            font-size: 8.5vw; font-weight: 900; color: #fbbf24;
             line-height: 1; margin: 0; 
             filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.5));
         }
@@ -79,7 +78,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING FOR PHILIPS TV...</div>
+    <div id="loading">CALIBRATING SMOOTH ROTATION...</div>
     <div class="stars-container" id="stars-bg"></div>
     <canvas id="comet-canvas"></canvas>
     
@@ -97,12 +96,11 @@
     </div>
 
     <script>
-        // TV-SAFE JAVASCRIPT (ES5)
+        // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 367000 / 86400000;
         var worldData = [];
         var flashingISO = {}; 
         var globe;
-        var isDirty = false;
 
         function initStars() {
             var bg = document.getElementById('stars-bg');
@@ -123,13 +121,13 @@
         function drawComets() {
             cCanvas.width = window.innerWidth; cCanvas.height = window.innerHeight;
             cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
-            if (Math.random() > 0.997) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -14, vy: 10, l: 1 });
+            if (Math.random() > 0.997) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -14, vy: 11, l: 1 });
             for(var i=0; i<comets.length; i++) {
                 var c = comets[i];
-                var g = cCtx.createLinearGradient(c.x, c.y, c.x+80, c.y-60);
-                g.addColorStop(0, "rgba(255,255,255,"+c.l+")"); g.addColorStop(1, "rgba(0,0,0,0)");
+                var g = cCtx.createLinearGradient(c.x, c.y, c.x + 80, c.y - 60);
+                g.addColorStop(0, "rgba(255, 255, 255,"+c.l+")"); g.addColorStop(1, "rgba(0,0,0,0)");
                 cCtx.strokeStyle = g; cCtx.lineWidth = 4; cCtx.beginPath();
-                cCtx.moveTo(c.x, c.y); cCtx.lineTo(c.x+110, c.y-85); cCtx.stroke();
+                cCtx.moveTo(c.x, c.y); cCtx.lineTo(c.x+100, c.y-80); cCtx.stroke();
                 c.x += c.vx; c.y += c.vy; c.l -= 0.007;
                 if(c.l <= 0) { comets.splice(i, 1); i--; }
             }
@@ -148,30 +146,27 @@
 
             var lastT = Date.now();
             var carry = 0;
-            function loop() {
+            
+            // THROTTLED LOOP: Only update map state twice per second to keep rotation smooth
+            setInterval(function() {
                 var now = Date.now();
                 carry += (now - lastT) * BIRTH_RATE;
                 lastT = now;
-                var changed = false;
+                var trigger = false;
                 while (carry >= 1) {
-                    if (worldData.length > 0) {
-                        var idx = Math.floor(Math.random() * worldData.length);
-                        flashingISO[worldData[idx].properties.isoCode] = now;
-                        changed = true;
-                    }
-                    carry--;
+                    var idx = Math.floor(Math.random() * worldData.length);
+                    flashingISO[worldData[idx].properties.isoCode] = now;
+                    trigger = true; carry--;
                 }
                 for (var k in flashingISO) {
-                    if (now - flashingISO[k] > 2500) { delete flashingISO[k]; changed = true; }
+                    if (now - flashingISO[k] > 2000) { delete flashingISO[k]; trigger = true; }
                 }
-                if (changed && globe) {
+                if (trigger && globe) {
                     globe.polygonCapColor(function(d) {
-                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 0.9)' : 'rgba(168, 85, 247, 0.3)';
+                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 0.9)' : 'rgba(168, 85, 247, 0.2)';
                     });
                 }
-                requestAnimationFrame(loop);
-            }
-            loop();
+            }, 500); 
         }
 
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
@@ -186,23 +181,24 @@
                     .width(document.querySelector('.globe-panel').clientWidth)
                     .height(window.innerHeight)
                     .backgroundColor('rgba(0,0,0,0)')
-                    // DAYTIME TEXTURE (NASA Blue Marble)
+                    // DAYTIME VISIBILITY (NASA Blue Marble)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.12)
                     .polygonsData(worldData)
                     .polygonSideColor(function() { return 'rgba(0,0,0,0)'; })
-                    .polygonStrokeColor(function() { return 'rgba(255, 255, 255, 0.3)'; })
-                    .polygonCapColor(function() { return 'rgba(168, 85, 247, 0.3)'; }) 
-                    .polygonAltitude(function(d) { return flashingISO[d.properties.isoCode] ? 0.03 : 0.01; });
+                    .polygonStrokeColor(function() { return 'rgba(255, 255, 255, 0.15)'; })
+                    .polygonCapColor(function() { return 'rgba(168, 85, 247, 0.2)'; });
 
-                // THE SMOOTHNESS FIX: Reduce internal resolution to 0.7 
-                // This makes it 100% smooth on Philips TVs while still looking great
-                globe.renderer().setPixelRatio(0.7); 
+                // THE ULTIMATE SMOOTHNESS FIX:
+                // We reduce the pixel ratio to 0.5. This removes the 4K rendering lag.
+                globe.renderer().setPixelRatio(0.5); 
+                globe.renderer().antialias = false; 
+
                 globe.controls().autoRotate = true;
                 globe.controls().autoRotateSpeed = 0.5;
                 globe.controls().enableZoom = false;
                 
-                // Position right and 0.9x size (Altitude 2.6)
+                // Position and Size (Altitude 2.6 = 0.9x size)
                 globe.pointOfView({ lat: 10, lng: 10, altitude: 2.6 });
 
                 document.getElementById('loading').style.display = 'none';
