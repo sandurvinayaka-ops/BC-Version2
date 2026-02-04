@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV V14</title>
+    <title>Birth Pulse - Cinematic Pacifier Edition</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -52,7 +52,7 @@
         
         .progress-box { width: 90%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 20px; margin-top: 25px; overflow: hidden; }
         .bar-fill { height: 100%; width: 0%; background: #fbbf24; box-shadow: 0 0 15px #fbbf24; }
-        #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; display: block; margin-top: 15px; }
+        #clock { color: #fbbf24; font-size: 1.5vw; font-weight: bold; display: block; margin-top: 15px; }
 
         /* 3. GLOBE CONTAINER ANCHORED */
         .globe-container {
@@ -69,7 +69,7 @@
 </head>
 <body>
 
-    <div id="loading">ENHANCING CINEMATIC VIEW...</div>
+    <div id="loading">LAUNCHING PACIFIER COMETS...</div>
     
     <div class="stars-container" id="starfield"></div>
 
@@ -95,6 +95,8 @@
         // TV-SAFE LEGACY JS (ES5)
         var BIRTH_RATE = 4.34;
         var ROTATION_SPEED = 0.42; 
+        var PACIFIER_PATH = "M12,2A5,5,0,0,0,7,7v2c-2,0-3,1-3,3s1,3,3,3v2a5,5,0,0,0,10,0V15c2,0,3-1,3-3s-1-3-3-3V7A5,5,0,0,0,12,2Zm3,7H9V7a3,3,0,0,1,6,0Zm0,9a3,3,0,0,1-6,0V17h6Z";
+        
         var worldData = null;
         var flashingISO = {}; 
         var comets = [];
@@ -111,7 +113,7 @@
         }
         setSizes();
 
-        // FIXED ANCHOR (72% Width, 50% Height) | Size 0.8x
+        // FIXED ANCHOR (72% Width, 50% Height)
         var projection = d3.geoOrthographic()
             .scale(h / 3.2)
             .translate([w * 0.72, h * 0.5]) 
@@ -134,16 +136,16 @@
             projection.rotate([rotation, -15]);
             context.clearRect(0, 0, w, h);
 
-            // 1. Update/Draw Comets
-            updateComets();
+            // 1. Draw Space Pacifier Comets
+            updatePacifierComets();
 
             var center = projection.translate();
             var radius = projection.scale();
 
             // 2. Draw Realistic 3D Ocean Gradient
             var oceanGrad = context.createRadialGradient(center[0]-radius/3, center[1]-radius/3, radius/10, center[0], center[1], radius);
-            oceanGrad.addColorStop(0, "#1e3a8a"); // Daytime Blue Core
-            oceanGrad.addColorStop(1, "#020617"); // Dark Midnight Edge
+            oceanGrad.addColorStop(0, "#1e3a8a"); 
+            oceanGrad.addColorStop(1, "#020617"); 
             context.beginPath();
             context.arc(center[0], center[1], radius, 0, 2 * Math.PI);
             context.fillStyle = oceanGrad; 
@@ -169,25 +171,55 @@
             requestAnimationFrame(renderLoop);
         }
 
-        function updateComets() {
-            if (Math.random() > 0.996) {
-                comets.push({ x: Math.random()*w, y: -100, vx: -16, vy: 12, l: 1.0 });
+        function updatePacifierComets() {
+            // Spawn random pacifier comet
+            if (Math.random() > 0.995) {
+                comets.push({
+                    x: Math.random() * w,
+                    y: -100,
+                    vx: -12 - Math.random() * 8,
+                    vy: 10 + Math.random() * 8,
+                    life: 1.0,
+                    rot: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 10
+                });
             }
+
             for (var i = 0; i < comets.length; i++) {
                 var c = comets[i];
-                var g = context.createLinearGradient(c.x, c.y, c.x + 150, c.y - 120);
-                g.addColorStop(0, "rgba(255, 255, 255," + c.l + ")");
-                g.addColorStop(0.2, "rgba(168, 85, 247, " + (c.l * 0.6) + ")");
+                
+                // Draw Trail
+                var g = context.createLinearGradient(c.x, c.y, c.x + 100, c.y - 80);
+                g.addColorStop(0, "rgba(255, 255, 255," + (c.life * 0.5) + ")");
                 g.addColorStop(1, "transparent");
                 context.strokeStyle = g;
-                context.lineWidth = 5; 
-                context.lineCap = "round";
+                context.lineWidth = 4;
                 context.beginPath();
                 context.moveTo(c.x, c.y);
-                context.lineTo(c.x + 160, c.y - 130);
+                context.lineTo(c.x + 120, c.y - 90);
                 context.stroke();
-                c.x += c.vx; c.y += c.vy; c.l -= 0.007;
-                if(c.l <= 0) { comets.splice(i, 1); i--; }
+
+                // Draw Pacifier Head
+                context.save();
+                context.translate(c.x, c.y);
+                context.rotate(c.rot * Math.PI / 180);
+                context.scale(0.8, 0.8);
+                
+                // Glow effect
+                context.shadowBlur = 15;
+                context.shadowColor = "white";
+                
+                var p = new Path2D(PACIFIER_PATH);
+                context.fillStyle = "rgba(255,255,255," + c.life + ")";
+                context.fill(p);
+                context.restore();
+
+                // Update Position
+                c.x += c.vx;
+                c.y += c.vy;
+                c.rot += c.rotSpeed;
+                c.life -= 0.006;
+                if (c.life <= 0) { comets.splice(i, 1); i--; }
             }
         }
 
