@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse 2025 - Ultimate TV Daytime</title>
+    <!-- Version 4.0 - Cache Breaker Applied -->
+    <title>Birth Pulse TV Pro V4</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         body, html {
@@ -12,7 +13,7 @@
             font-family: Arial, Helvetica, sans-serif; color: white;
         }
 
-        /* REALISTIC SPACE (Zero CPU Load) */
+        /* REALISTIC STARS (CSS only to save CPU) */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #0c1e3e 0%, #010409 100%);
@@ -21,13 +22,10 @@
         .star {
             position: absolute; background: white; border-radius: 50%;
             animation: twinkle var(--t) infinite ease-in-out;
-            will-change: opacity;
         }
-        @keyframes twinkle { 
-            0%, 100% { opacity: 0.1; transform: scale(0.8); } 
-            50% { opacity: 0.8; transform: scale(1.1); } 
-        }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.9; } }
 
+        /* COMET LAYER */
         #comet-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 100; pointer-events: none;
@@ -42,7 +40,7 @@
             margin: 0;
         }
 
-        /* LEFT CENTRE ALIGNMENT */
+        /* LEFT-CENTRE ALIGNMENT */
         .stats-panel { 
             position: absolute; top: 50%; left: 6vw; 
             transform: translateY(-50%); width: 35vw; z-index: 120;
@@ -50,7 +48,7 @@
         }
 
         .label { 
-            font-size: 1.4vw; color: #38bdf8; /* Cyan Label */
+            font-size: 1.4vw; color: #38bdf8; 
             text-transform: uppercase; font-weight: bold; letter-spacing: 3px;
             margin-bottom: 5px;
         }
@@ -78,7 +76,7 @@
 </head>
 <body>
 
-    <div id="loading">CALIBRATING SMOOTH ROTATION...</div>
+    <div id="loading">SYNCHRONIZING DAYTIME WORLD...</div>
     <div class="stars-container" id="stars-bg"></div>
     <canvas id="comet-canvas"></canvas>
     
@@ -96,7 +94,7 @@
     </div>
 
     <script>
-        // TV-SAFE ES5 SCRIPT
+        // TV-Safe JavaScript (ES5)
         var BIRTH_RATE = 367000 / 86400000;
         var worldData = [];
         var flashingISO = {}; 
@@ -121,7 +119,7 @@
         function drawComets() {
             cCanvas.width = window.innerWidth; cCanvas.height = window.innerHeight;
             cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
-            if (Math.random() > 0.997) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -14, vy: 11, life: 1 });
+            if (Math.random() > 0.997) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -14, vy: 11, l: 1 });
             for(var i=0; i<comets.length; i++) {
                 var c = comets[i];
                 var g = cCtx.createLinearGradient(c.x, c.y, c.x + 80, c.y - 60);
@@ -135,10 +133,12 @@
         }
 
         function startSim() {
+            // Counter and UI Update
             setInterval(function() {
                 var now = new Date();
                 var start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 var num = Math.floor((now - start) * BIRTH_RATE);
+                // Forced DOT separator
                 document.getElementById('birthCount').innerText = num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
                 document.getElementById('bar').style.width = (((now - start) / 86400000) * 100) + "%";
@@ -146,30 +146,41 @@
 
             var lastT = Date.now();
             var carry = 0;
-            
-            // THROTTLED LOOP: Only update map twice per second to keep rotation smooth
+
+            // PERFORMANCE SECRET: This loop runs at a lower frequency (2 times per second)
+            // This allows the Globe rotation to be smooth while the countries flash gold.
             setInterval(function() {
                 var now = Date.now();
-                carry += (now - lastT) * BIRTH_RATE;
-                lastT = now;
+                carry += (500) * BIRTH_RATE; // Based on 500ms interval
+                
                 var trigger = false;
                 while (carry >= 1) {
-                    var idx = Math.floor(Math.random() * worldData.length);
-                    flashingISO[worldData[idx].properties.isoCode] = now;
-                    trigger = true; carry--;
+                    if (worldData.length > 0) {
+                        var idx = Math.floor(Math.random() * worldData.length);
+                        var iso = worldData[idx].properties.isoCode;
+                        flashingISO[iso] = now;
+                        trigger = true;
+                    }
+                    carry--;
                 }
-                for (var k in flashingISO) {
-                    if (now - flashingISO[k] > 2000) { delete flashingISO[k]; trigger = true; }
+
+                for (var key in flashingISO) {
+                    if (now - flashingISO[key] > 2000) {
+                        delete flashingISO[key];
+                        trigger = true;
+                    }
                 }
+
                 if (trigger && globe) {
                     globe.polygonCapColor(function(d) {
-                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 0.9)' : 'rgba(168, 85, 247, 0.2)';
+                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 0.9)' : 'rgba(168, 85, 247, 0.3)';
                     });
                 }
-            }, 500); 
+            }, 500);
         }
 
-        fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
+        // Fetch using a random number to bypass TV Cache
+        fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson?v=" + Math.random())
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 worldData = data.features.map(function(f) {
@@ -181,28 +192,27 @@
                     .width(document.querySelector('.globe-panel').clientWidth)
                     .height(window.innerHeight)
                     .backgroundColor('rgba(0,0,0,0)')
-                    // DAYTIME VISIBILITY (NASA Blue Marble)
+                    // DAYTIME TEXTURE (NASA Blue Marble)
                     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.12)
                     .polygonsData(worldData)
                     .polygonSideColor(function() { return 'rgba(0,0,0,0)'; })
-                    .polygonStrokeColor(function() { return 'rgba(255, 255, 255, 0.15)'; })
-                    .polygonCapColor(function() { return 'rgba(168, 85, 247, 0.2)'; });
+                    .polygonStrokeColor(function() { return 'rgba(255, 255, 255, 0.2)'; })
+                    .polygonCapColor(function() { return 'rgba(168, 85, 247, 0.3)'; });
 
-                // THE ULTIMATE SMOOTHNESS FIX:
-                // We reduce the pixel ratio to 0.5. This removes the 4K rendering lag.
-                globe.renderer().setPixelRatio(0.5); 
-                globe.renderer().antialias = false; 
-
+                // THE PERFORMANCE FIX FOR PHILIPS 50 INCH
+                globe.renderer().setPixelRatio(1); // Force standard resolution (prevents 4K lag)
                 globe.controls().autoRotate = true;
                 globe.controls().autoRotateSpeed = 0.5;
                 globe.controls().enableZoom = false;
                 
-                // Position and Size (Altitude 2.6 = 0.9x size)
+                // Position right and 0.9x size (Altitude 2.6)
                 globe.pointOfView({ lat: 10, lng: 10, altitude: 2.6 });
 
                 document.getElementById('loading').style.display = 'none';
-                initStars(); drawComets(); startSim();
+                initStars();
+                drawComets();
+                startSim();
             });
     </script>
 </body>
