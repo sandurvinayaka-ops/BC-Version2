@@ -3,31 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Birth Pulse - TV Smooth Edition</title>
+    <title>Birth Pulse - TV Ultimate Edition</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
             overflow: hidden; background-color: #010409;
-            font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: white;
+            font-family: Arial, sans-serif; color: white;
         }
 
-        /* REALISTIC SPACE BACKGROUND */
+        /* REALISTIC SHIMMERING STARS */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1B2735 0%, #090A0F 100%);
+            background: radial-gradient(circle at center, #0c1e3e 0%, #010409 100%);
             z-index: 0;
         }
         .star {
             position: absolute; background: white; border-radius: 50%;
             animation: twinkle var(--duration) infinite ease-in-out;
         }
-        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-
-        .globe-container {
-            position: fixed; right: -10%; top: 0; width: 80%; height: 100%; z-index: 1;
-        }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.9; } }
 
         .ui-overlay {
             position: relative; z-index: 10; pointer-events: none;
@@ -35,25 +31,35 @@
             display: flex; flex-direction: column; justify-content: space-between;
         }
 
+        /* LEFT CENTRE ALIGNMENT */
+        .stats-panel { 
+            position: absolute; top: 50%; left: 6vw; 
+            transform: translateY(-50%); width: 40vw; z-index: 100;
+        }
+
         .neon-text { text-shadow: 0 0 30px rgba(250, 204, 21, 0.6); }
 
-        #comet-canvas {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2; pointer-events: none;
+        .globe-container {
+            position: fixed; right: -10vw; top: 0; width: 80vw; height: 100vh; z-index: 1;
+        }
+        
+        #loading {
+            position: absolute; width: 100%; height: 100%;
+            background: #010409; display: flex; align-items: center; 
+            justify-content: center; z-index: 2000; color: #38bdf8; font-size: 2.5vw;
         }
     </style>
 </head>
 <body>
 
+    <div id="loading">OPTIMIZING SMOOTH ROTATION...</div>
     <div class="stars-container" id="starfield"></div>
-    <canvas id="comet-canvas"></canvas>
 
-    <div class="globe-container" id="globe-parent">
-        <svg id="globe-svg" style="width: 100%; height: 100%; overflow: visible;"></svg>
+    <div class="globe-container">
+        <canvas id="globe-canvas"></canvas>
     </div>
 
     <div class="ui-overlay">
-        <!-- HEADER -->
         <div>
             <h1 class="text-[2.5vw] font-black text-[#D946EF] tracking-[0.3em] uppercase">
                 Mother & Child Care — Women's Health
@@ -61,116 +67,97 @@
             <div class="h-[4px] w-[35vw] bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.7)] mt-2"></div>
         </div>
 
-        <!-- STATS CENTRE LEFT -->
-        <div class="flex flex-col gap-4">
-            <span class="text-[1.2vw] font-black tracking-[0.5em] text-yellow-500/80 uppercase">Global Birth Count Today</span>
-            <div id="birthCount" class="text-[9vw] font-black text-yellow-400 tabular-nums leading-none neon-text">
-                0
-            </div>
+        <div class="stats-panel">
+            <span class="text-[1.3vw] font-black tracking-[0.5em] text-yellow-500/80 uppercase mb-2 block">Global Birth Count Today</span>
+            <div id="birthCount" class="text-[9vw] font-black text-yellow-400 tabular-nums leading-none neon-text">0</div>
             
-            <div class="mt-8 space-y-4">
-                <div class="flex justify-between w-[30vw] text-[1vw] font-bold tracking-widest text-slate-500 uppercase">
-                    <span>Diurnal Phase</span>
-                    <span id="sync-text" class="text-yellow-500">0% Synchronized</span>
-                </div>
+            <div class="mt-10 space-y-4">
                 <div class="h-3 w-[30vw] bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
-                    <div id="progress-bar" class="h-full bg-yellow-500 shadow-[0_0_20px_#eab308] transition-all duration-1000 linear" style="width: 0%"></div>
+                    <div id="progress-bar" class="h-full bg-yellow-500 shadow-[0_0_20px_#eab308]" style="width: 0%"></div>
                 </div>
                 <div class="inline-block bg-black/50 border border-yellow-500/20 px-8 py-4 rounded-xl mt-4">
-                    <span id="clock" class="text-yellow-400 font-bold tabular-nums tracking-[0.3em] text-[1.8vw]">00:00:00</span>
+                    <span id="clock" class="text-yellow-400 font-bold tabular-nums tracking-[0.3em] text-[2vw]">00:00:00</span>
                 </div>
             </div>
         </div>
 
-        <!-- FOOTER -->
         <div class="text-[0.8vw] font-bold text-slate-600 tracking-[0.5em] uppercase">
             Active Telemetry Stream — Source: Demographic Matrix
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
+        // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
         var ROTATION_SPEED = 0.22;
-        var PACIFIER_PATH = "M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm2 14h-4v-1h4v1zm.65-3.07l-.65.46V14h-4v-.61l-.65-.46C8.52 12.33 8 11.23 8 10c0-2.21 1.79-4 4-4s4 1.79 4 4c0 1.23-.52 2.33-1.35 2.93z";
+        var worldData = null;
+        var flashingISO = {}; // Tracks which country is flashing gold
 
-        // --- GLOBE ENGINE (D3 Restored) ---
-        var svg = d3.select("#globe-svg");
+        var canvas = document.getElementById("globe-canvas");
+        var context = canvas.getContext("2d");
         var width = window.innerWidth * 0.8;
         var height = window.innerHeight;
         var rotation = 0;
 
+        canvas.width = width;
+        canvas.height = height;
+
         var projection = d3.geoOrthographic()
             .scale(height / 2.3)
-            .translate([width / 1.8, height / 2])
+            .translate([width / 1.7, height / 2])
             .clipAngle(90);
 
-        var path = d3.geoPath().projection(projection);
+        var path = d3.geoPath(projection, context);
 
-        function initGlobe() {
-            d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(geoData) {
-                
-                // Draw Sea
-                svg.append("circle")
-                    .attr("cx", width / 1.8).attr("cy", height / 2)
-                    .attr("r", projection.scale())
-                    .attr("fill", "#1e1b4b").attr("opacity", 0.8);
-
-                var mapGroup = svg.append("g");
-                var markerGroup = svg.append("g");
-
-                d3.timer(function() {
-                    rotation += ROTATION_SPEED;
-                    projection.rotate([rotation, -12]);
-
-                    mapGroup.selectAll(".country")
-                        .data(geoData.features)
-                        .join("path")
-                        .attr("class", "country")
-                        .attr("d", path)
-                        .attr("fill", "#7c3aed")
-                        .attr("stroke", "#a78bfa")
-                        .attr("stroke-width", 0.5)
-                        .attr("opacity", 0.7);
-
-                    updateMarkers(markerGroup);
-                });
-
+        function init() {
+            d3.json("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson").then(function(data) {
+                worldData = data;
+                document.getElementById('loading').style.display = 'none';
+                render();
                 startSimulation();
             });
         }
 
-        var activeMarkers = [];
-        function updateMarkers(group) {
-            var currentRot = projection.rotate();
+        function render() {
+            rotation += ROTATION_SPEED;
+            projection.rotate([rotation, -12]);
             
-            group.selectAll(".marker")
-                .data(activeMarkers, function(d) { return d.id; })
-                .join(
-                    function(enter) {
-                        var g = enter.append("g").attr("class", "marker");
-                        g.append("path")
-                            .attr("d", PACIFIER_PATH)
-                            .attr("transform", "translate(-12,-12) scale(1.2)")
-                            .attr("fill", "#FACC15");
-                        g.append("circle")
-                            .attr("r", 5).attr("fill", "none").attr("stroke", "#FACC15").attr("stroke-width", 2)
-                            .transition().duration(2000).attr("r", 60).attr("opacity", 0).remove();
-                        return g;
-                    },
-                    function(update) {
-                        return update.attr("transform", function(d) {
-                            var pos = projection([d.lng, d.lat]);
-                            return pos ? "translate(" + pos[0] + "," + pos[1] + ")" : "translate(-100,-100)";
-                        }).attr("opacity", function(d) {
-                            var geoPoint = [d.lng, d.lat];
-                            return d3.geoDistance([-currentRot[0], -currentRot[1]], geoPoint) < Math.PI/2 ? 1 : 0;
-                        });
+            context.clearRect(0, 0, width, height);
+
+            // 1. Draw Oceans (Daytime Blue)
+            context.beginPath();
+            context.arc(width / 1.7, height / 2, projection.scale(), 0, 2 * Math.PI);
+            context.fillStyle = "#004e92"; 
+            context.fill();
+
+            if (worldData) {
+                var now = Date.now();
+                
+                // 2. Draw Countries
+                worldData.features.forEach(function(feature) {
+                    var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3;
+                    context.beginPath();
+                    path(feature);
+                    
+                    // Check if this country is currently flashing
+                    if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
+                        context.fillStyle = "#fbbf24"; // FULL GOLD FLASH
+                    } else {
+                        context.fillStyle = "#00d2ff"; // DAYTIME TEAL LAND
                     }
-                );
+                    
+                    context.fill();
+                    context.strokeStyle = "rgba(255,255,255,0.3)";
+                    context.lineWidth = 0.5;
+                    context.stroke();
+                });
+            }
+
+            requestAnimationFrame(render);
         }
 
         function startSimulation() {
+            // UI Thread
             setInterval(function() {
                 var now = new Date();
                 var start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -179,38 +166,30 @@
                 
                 document.getElementById('birthCount').innerText = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
-                
-                var dayProgress = (elapsed / 86400) * 100;
-                document.getElementById('progress-bar').style.width = dayProgress + "%";
-                document.getElementById('sync-text').innerText = Math.round(dayProgress) + "% Synchronized";
+                document.getElementById('progress-bar').style.width = (elapsed / 86400 * 100) + "%";
 
-                // Add random marker
-                activeMarkers.push({
-                    id: Math.random(),
-                    lat: (Math.random() - 0.5) * 120,
-                    lng: (Math.random() - 0.5) * 360
-                });
-                if(activeMarkers.length > 15) activeMarkers.shift();
-
+                // Trigger random birth flash
+                if (worldData) {
+                    var idx = Math.floor(Math.random() * worldData.features.length);
+                    var iso = worldData.features[idx].properties.ISO_A3 || worldData.features[idx].properties.ADM0_A3;
+                    flashingISO[iso] = Date.now();
+                }
             }, 1000 / BIRTH_RATE);
         }
 
-        // --- STARS & COMETS ---
-        function initStars() {
-            var field = document.getElementById('starfield');
-            for (var i = 0; i < 100; i++) {
-                var s = document.createElement('div');
-                s.className = 'star';
-                s.style.width = s.style.height = (1 + Math.random() * 2) + 'px';
-                s.style.left = Math.random() * 100 + '%';
-                s.style.top = Math.random() * 100 + '%';
-                s.style.setProperty('--duration', (2 + Math.random() * 3) + 's');
-                field.appendChild(s);
-            }
+        // --- STARS ---
+        var field = document.getElementById('starfield');
+        for (var i = 0; i < 80; i++) {
+            var s = document.createElement('div');
+            s.className = 'star';
+            s.style.width = s.style.height = (1 + Math.random() * 2.5) + 'px';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.setProperty('--duration', (2 + Math.random() * 3) + 's');
+            field.appendChild(s);
         }
 
-        initStars();
-        initGlobe();
+        init();
     </script>
 </body>
 </html>
