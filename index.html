@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic Floating Edition</title>
+    <title>Birth Pulse - Cinematic TV Final</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,7 +13,18 @@
             font-family: Arial, Helvetica, sans-serif; color: white;
         }
 
-        /* UI OVERLAY */
+        /* 1. REALISTIC STARS */
+        .stars-container {
+            position: absolute; width: 100%; height: 100%;
+            z-index: 1;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: blink var(--t) infinite ease-in-out;
+        }
+        @keyframes blink { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.8; } }
+
+        /* 2. UI LAYOUT */
         .ui-overlay {
             position: relative; z-index: 10; pointer-events: none;
             height: 100vh; padding: 6vh 6vw;
@@ -21,7 +32,7 @@
 
         .main-heading {
             position: absolute; top: 7vh; left: 6vw;
-            font-size: 2.6vw; color: #a855f7; 
+            font-size: 2.6vw; color: #a855f7; /* Purple */
             font-weight: 800; z-index: 110;
             text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
         }
@@ -41,7 +52,7 @@
         .bar-fill { height: 100%; width: 0%; background: #fbbf24; box-shadow: 0 0 15px #fbbf24; }
         #clock { color: #fbbf24; font-size: 1.5vw; font-weight: bold; display: block; margin-top: 15px; }
 
-        /* GLOBE CONTAINER */
+        /* 3. GLOBE CONTAINER */
         .globe-container {
             position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 5;
         }
@@ -56,7 +67,9 @@
 </head>
 <body>
 
-    <div id="loading">PREPARING CINEMATIC SPACE...</div>
+    <div id="loading">PREPARING CINEMATIC GLOBE...</div>
+    
+    <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
         <canvas id="main-canvas"></canvas>
@@ -80,7 +93,7 @@
         // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
         var ROTATION_SPEED = 0.42; 
-        var PACIFIER_PATH = "M12,2A5,5,0,0,0,7,7v2c-2,0-3,1-3,3s1,3,3,3v2a5,5,0,0,0,10,0V15c2,0,3-1,3-3s-1-3-3-3V7A5,5,0,0,0,12,2Zm3,7H9V7a3,3,0,0,1,6,0Zm0,9a3,3,0,0,1-6,0V17h6Z";
+        var PACIFIER_SVG = "M12,2A5,5,0,0,0,7,7v2c-2,0-3,1-3,3s1,3,3,3v2a5,5,0,0,0,10,0V15c2,0,3-1,3-3s-1-3-3-3V7A5,5,0,0,0,12,2Zm3,7H9V7a3,3,0,0,1,6,0Zm0,9a3,3,0,0,1-6,0V17h6Z";
         
         var worldData = null;
         var flashingISO = {}; 
@@ -97,7 +110,7 @@
         }
         setSizes();
 
-        // 0.8x SIZE & FIXED ANCHOR
+        // 0.8x SIZE & LOCKED RIGHT POSITION
         var projection = d3.geoOrthographic()
             .scale(h / 3.4)
             .translate([w * 0.72, h * 0.5]) 
@@ -106,7 +119,7 @@
         var path = d3.geoPath(projection, context);
 
         // --- INIT STARS ---
-        for(var i=0; i<100; i++) {
+        for(var i=0; i<120; i++) {
             stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 });
         }
 
@@ -114,9 +127,9 @@
         for(var i=0; i<6; i++) {
             floaters.push({
                 x: Math.random() * w, y: Math.random() * h,
-                vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
-                rot: Math.random() * 360, rSpeed: (Math.random() - 0.5) * 2,
-                phase: Math.random() * Math.PI * 2
+                vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+                rot: Math.random() * 360, rSpeed: (Math.random() - 0.5) * 1.5,
+                phase: Math.random() * 5
             });
         }
 
@@ -135,7 +148,7 @@
             projection.rotate([rotation, -15]);
             context.clearRect(0, 0, w, h);
 
-            // 1. Draw Stars
+            // 1. Stars (Smooth Twinkle)
             context.fillStyle = "white";
             var time = Date.now() * 0.001;
             for(var i=0; i<stars.length; i++) {
@@ -145,32 +158,44 @@
             }
             context.globalAlpha = 1;
 
-            // 2. Draw Floating Pacifiers
+            // 2. Floating Pacifiers
             drawFloaters();
 
             var center = projection.translate();
             var radius = projection.scale();
 
-            // 3. Draw 3D Ocean
-            var oceanGrad = context.createRadialGradient(center[0]-radius/3, center[1]-radius/3, radius/10, center[0], center[1], radius);
-            oceanGrad.addColorStop(0, "#1e40af"); oceanGrad.addColorStop(1, "#020617");
-            context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
-            context.fillStyle = oceanGrad; context.fill();
+            // 3. Realistic 3D Sphere Shading (Oceans)
+            var oceanGrad = context.createRadialGradient(
+                center[0] - radius/2.5, center[1] - radius/2.5, radius/10,
+                center[0], center[1], radius
+            );
+            oceanGrad.addColorStop(0, "#1e40af"); // Luminous Blue
+            oceanGrad.addColorStop(0.6, "#0f172a"); // Deep Navy
+            oceanGrad.addColorStop(1, "#020617"); // Midnight Edge
+            
+            context.beginPath();
+            context.arc(center[0], center[1], radius, 0, 7);
+            context.fillStyle = oceanGrad; 
+            context.fill();
 
-            // 4. Draw Countries
+            // 4. Countries (Luminous Amethyst Theme)
             if (worldData) {
                 var now = Date.now();
                 worldData.features.forEach(function(feature) {
                     var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3;
-                    context.beginPath(); path(feature);
+                    context.beginPath();
+                    path(feature);
+                    
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = "#fbbf24"; // Gold
+                        context.fillStyle = "#fbbf24"; // Gold Flash
                     } else {
-                        context.fillStyle = "#581c87"; // Purple
+                        context.fillStyle = "#6b21a8"; // Royal Amethyst Land
                     }
+                    
                     context.fill();
-                    context.strokeStyle = "rgba(217, 70, 239, 0.4)";
-                    context.lineWidth = 0.5; context.stroke();
+                    context.strokeStyle = "rgba(34, 211, 238, 0.4)"; // Cyan Border
+                    context.lineWidth = 0.5;
+                    context.stroke();
                 });
             }
             requestAnimationFrame(renderLoop);
@@ -181,19 +206,17 @@
             for (var i = 0; i < floaters.length; i++) {
                 var f = floaters[i];
                 f.x += f.vx; f.y += f.vy; f.rot += f.rSpeed;
-                // Boundary check
                 if(f.x < -50) f.x = w + 50; if(f.x > w + 50) f.x = -50;
                 if(f.y < -50) f.y = h + 50; if(f.y > h + 50) f.y = -50;
 
-                var bob = Math.sin(now + f.phase) * 15;
-                
+                var bob = Math.sin(now + f.phase) * 12;
                 context.save();
                 context.translate(f.x, f.y + bob);
                 context.rotate(f.rot * Math.PI / 180);
-                context.shadowBlur = 15; context.shadowColor = "rgba(255,255,255,0.5)";
-                var p = new Path2D(PACIFIER_PATH);
-                context.fillStyle = "rgba(255,255,255,0.7)";
-                context.scale(1.2, 1.2);
+                context.shadowBlur = 10; context.shadowColor = "white";
+                var p = new Path2D(PACIFIER_SVG);
+                context.fillStyle = "rgba(255,255,255,0.6)";
+                context.scale(1.1, 1.1);
                 context.fill(p);
                 context.restore();
             }
