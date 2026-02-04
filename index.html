@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - TV MAX STABLE V5</title>
+    <title>Birth Pulse - Ultimate TV Edition</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         body, html {
@@ -12,7 +12,7 @@
             font-family: Arial, sans-serif; color: white;
         }
 
-        /* HARDWARE ACCELERATED STARS */
+        /* HARDWARE ACCELERATED BACKGROUND */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #0c1e3e 0%, #010409 100%);
@@ -23,7 +23,7 @@
             animation: twinkle var(--t) infinite ease-in-out;
             will-change: opacity;
         }
-        @keyframes twinkle { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.9; } }
+        @keyframes twinkle { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.8; } }
 
         #comet-canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -32,7 +32,7 @@
 
         .main-heading {
             position: absolute; top: 5vh; left: 5vw;
-            font-size: 2.8vw; color: #a855f7;
+            font-size: 2.8vw; color: #a855f7; /* Purple */
             font-weight: 800; text-transform: uppercase;
             letter-spacing: 2px; z-index: 110;
             text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
@@ -52,14 +52,14 @@
         }
 
         .count {
-            font-size: 8.5vw; font-weight: 900; color: #fbbf24;
-            line-height: 1.1; margin: 1vh 0; 
+            font-size: 8.5vw; font-weight: 900; color: #fbbf24; /* Gold */
+            line-height: 1.1; margin: 0; 
             filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.5));
         }
         
-        .bar-container { width: 90%; height: 14px; background: rgba(168, 85, 247, 0.2); border-radius: 20px; margin-top: 25px;}
-        .bar-fill { height: 100%; width: 0%; background: #fbbf24; border-radius: 20px;}
-        #clock { color: #fbbf24; font-size: 2vw; font-weight: bold; display: block; margin-top: 15px; }
+        .bar-container { width: 90%; height: 12px; background: rgba(168, 85, 247, 0.2); border-radius: 20px; margin-top: 25px;}
+        .bar-fill { height: 100%; width: 0%; background: #fbbf24; border-radius: 20px; box-shadow: 0 0 15px #fbbf24;}
+        #clock { color: #fbbf24; font-size: 2vw; font-weight: bold; display: block; margin-top: 15px; letter-spacing: 2px; }
 
         .globe-panel { 
             position: absolute; right: -15vw; width: 85vw; height: 100vh; z-index: 5; 
@@ -74,7 +74,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING FOR PHILIPS TV...</div>
+    <div id="loading">INITIALIZING DAYTIME WORLD...</div>
     <div class="stars-container" id="stars-bg"></div>
     <canvas id="comet-canvas"></canvas>
     
@@ -92,6 +92,7 @@
     </div>
 
     <script>
+        // TV-SAFE ES5 JAVASCRIPT (No Arrow Functions, No Let/Const)
         var BIRTH_RATE = 367000 / 86400000;
         var worldData = [];
         var flashingISO = {}; 
@@ -103,7 +104,7 @@
                 var s = document.createElement('div');
                 s.className = 'star';
                 s.style.left = Math.random()*100 + '%'; s.style.top = Math.random()*100 + '%';
-                var sz = (1 + Math.random()*2) + 'px';
+                var sz = (1 + Math.random()*2.5) + 'px';
                 s.style.width = sz; s.style.height = sz;
                 s.style.setProperty('--t', (2 + Math.random()*4) + 's');
                 bg.appendChild(s);
@@ -116,11 +117,11 @@
         function drawComets() {
             cCanvas.width = window.innerWidth; cCanvas.height = window.innerHeight;
             cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
-            if (Math.random() > 0.998) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -15, vy: 12, l: 1 });
+            if (Math.random() > 0.997) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -14, vy: 10, l: 1 });
             for(var i=0; i<comets.length; i++) {
                 var c = comets[i];
                 var g = cCtx.createLinearGradient(c.x, c.y, c.x+80, c.y-60);
-                g.addColorStop(0, "white"); g.addColorStop(1, "transparent");
+                g.addColorStop(0, "rgba(255,255,255,"+c.l+")"); g.addColorStop(1, "rgba(0,0,0,0)");
                 cCtx.strokeStyle = g; cCtx.lineWidth = 4; cCtx.beginPath();
                 cCtx.moveTo(c.x, c.y); cCtx.lineTo(c.x+100, c.y-80); cCtx.stroke();
                 c.x += c.vx; c.y += c.vy; c.l -= 0.008;
@@ -130,7 +131,7 @@
         }
 
         function startSim() {
-            // UI Clock Loop
+            // Clock & Counter Update
             setInterval(function() {
                 var now = new Date();
                 var start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -143,30 +144,30 @@
             var lastT = Date.now();
             var carry = 0;
             
-            // THROTTLED FLASH LOOP: This is the secret to smooth rotation.
-            // We only ask the CPU to update colors twice per second.
+            // PERFORMANCE FIX FOR TV: Run map updates at 2fps, but rotation stays at 60fps
             setInterval(function() {
                 var now = Date.now();
-                carry += (now - lastT) * BIRTH_RATE;
-                lastT = now;
-                var trigger = false;
+                carry += (500) * BIRTH_RATE;
+                var changed = false;
                 while (carry >= 1) {
-                    var idx = Math.floor(Math.random() * worldData.length);
-                    flashingISO[worldData[idx].properties.isoCode] = now;
-                    trigger = true; carry--;
+                    if (worldData.length > 0) {
+                        var idx = Math.floor(Math.random() * worldData.length);
+                        flashingISO[worldData[idx].properties.isoCode] = now;
+                        changed = true;
+                    }
+                    carry--;
                 }
                 for (var k in flashingISO) {
-                    if (now - flashingISO[k] > 2000) { delete flashingISO[k]; trigger = true; }
+                    if (now - flashingISO[k] > 2500) { delete flashingISO[k]; changed = true; }
                 }
-                if (trigger && globe) {
+                if (changed && globe) {
                     globe.polygonCapColor(function(d) {
-                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 1)' : 'rgba(109, 40, 217, 0.6)';
+                        return flashingISO[d.properties.isoCode] ? 'rgba(251, 191, 36, 0.9)' : 'rgba(109, 40, 217, 0.4)';
                     });
                 }
             }, 500); 
         }
 
-        // Fetch low-poly map
         fetch("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson")
             .then(function(res) { return res.json(); })
             .then(function(data) {
@@ -179,23 +180,23 @@
                     .width(document.querySelector('.globe-panel').clientWidth)
                     .height(window.innerHeight)
                     .backgroundColor('rgba(0,0,0,0)')
-                    // FIXED BLUE OCEAN (No image loading required)
-                    .globeColor('#0055ff') 
+                    // NASA BLUE MARBLE TEXTURE
+                    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
                     .showAtmosphere(true).atmosphereColor('#38bdf8').atmosphereAltitude(0.12)
                     .polygonsData(worldData)
                     .polygonSideColor(function() { return 'rgba(0,0,0,0)'; })
                     .polygonStrokeColor(function() { return 'rgba(255, 255, 255, 0.2)'; })
-                    .polygonCapColor(function() { return 'rgba(109, 40, 217, 0.6)'; });
+                    .polygonCapColor(function() { return 'rgba(109, 40, 217, 0.4)'; });
 
-                // PERFORMANCE MODE: Low pixel ratio (0.4) removes all rotation lag on TV
-                globe.renderer().setPixelRatio(0.4); 
+                // THE ULTIMATE SMOOTHNESS FIX
+                globe.renderer().setPixelRatio(0.6); // Forces TV to use standard resolution, removing all rotation lag
                 globe.renderer().antialias = false; 
 
                 globe.controls().autoRotate = true;
                 globe.controls().autoRotateSpeed = 0.5;
                 globe.controls().enableZoom = false;
                 
-                // Align right and 0.9x size (Altitude 2.6)
+                // Position right and 0.9x size (Altitude 2.6)
                 globe.pointOfView({ lat: 10, lng: 10, altitude: 2.6 });
 
                 document.getElementById('loading').style.display = 'none';
