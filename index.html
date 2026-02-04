@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV V13</title>
+    <title>Birth Pulse - Cinematic TV V14</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -45,7 +45,7 @@
         }
 
         .count {
-            font-size: 9vw; font-weight: 900; color: #fbbf24;
+            font-size: 9.5vw; font-weight: 900; color: #fbbf24;
             line-height: 1.1; margin: 0; 
             text-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
         }
@@ -54,7 +54,7 @@
         .bar-fill { height: 100%; width: 0%; background: #fbbf24; box-shadow: 0 0 15px #fbbf24; }
         #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; display: block; margin-top: 15px; }
 
-        /* 3. GLOBE CONTAINER LOCKED */
+        /* 3. GLOBE CONTAINER ANCHORED */
         .globe-container {
             position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 5;
         }
@@ -69,7 +69,7 @@
 </head>
 <body>
 
-    <div id="loading">SYNCHRONIZING CINEMATIC ENVIRONMENT...</div>
+    <div id="loading">ENHANCING CINEMATIC VIEW...</div>
     
     <div class="stars-container" id="starfield"></div>
 
@@ -92,13 +92,12 @@
     </div>
 
     <script>
-        // TV-SAFE ES5 SCRIPT
+        // TV-SAFE LEGACY JS (ES5)
         var BIRTH_RATE = 4.34;
         var ROTATION_SPEED = 0.42; 
         var worldData = null;
         var flashingISO = {}; 
         var comets = [];
-        var auroraOffset = 0;
 
         var canvas = document.getElementById("main-canvas");
         var context = canvas.getContext("2d");
@@ -112,9 +111,9 @@
         }
         setSizes();
 
-        // ANCHORED POSITION (72% Width, 50% Height)
+        // FIXED ANCHOR (72% Width, 50% Height) | Size 0.8x
         var projection = d3.geoOrthographic()
-            .scale(h / 2.9)
+            .scale(h / 3.2)
             .translate([w * 0.72, h * 0.5]) 
             .clipAngle(90);
 
@@ -135,19 +134,16 @@
             projection.rotate([rotation, -15]);
             context.clearRect(0, 0, w, h);
 
-            // 1. Draw Canvas Aurora (Northern Lights)
-            drawAurora();
-
-            // 2. Draw Comets
+            // 1. Update/Draw Comets
             updateComets();
 
             var center = projection.translate();
             var radius = projection.scale();
 
-            // 3. Draw 3D Ocean Gradient
+            // 2. Draw Realistic 3D Ocean Gradient
             var oceanGrad = context.createRadialGradient(center[0]-radius/3, center[1]-radius/3, radius/10, center[0], center[1], radius);
-            oceanGrad.addColorStop(0, "#0c2461");
-            oceanGrad.addColorStop(1, "#02040a");
+            oceanGrad.addColorStop(0, "#1e3a8a"); // Daytime Blue Core
+            oceanGrad.addColorStop(1, "#020617"); // Dark Midnight Edge
             context.beginPath();
             context.arc(center[0], center[1], radius, 0, 2 * Math.PI);
             context.fillStyle = oceanGrad; 
@@ -160,32 +156,17 @@
                     context.beginPath();
                     path(feature);
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = "#fbbf24"; 
+                        context.fillStyle = "#fbbf24"; // Birth Gold
                     } else {
-                        context.fillStyle = "#4c1d95"; 
+                        context.fillStyle = "#581c87"; // Royal Purple Land
                     }
                     context.fill();
-                    context.strokeStyle = "rgba(34, 211, 238, 0.3)";
+                    context.strokeStyle = "rgba(217, 70, 239, 0.4)"; // Neon Magenta Border
                     context.lineWidth = 0.5;
                     context.stroke();
                 });
             }
             requestAnimationFrame(renderLoop);
-        }
-
-        function drawAurora() {
-            auroraOffset += 0.002;
-            context.save();
-            context.globalCompositeOperation = "screen";
-            var grad = context.createLinearGradient(0, 0, w, h*0.5);
-            var op = 0.15 + (Math.sin(auroraOffset * 5) * 0.05);
-            grad.addColorStop(0, "transparent");
-            grad.addColorStop(0.3 + (Math.sin(auroraOffset)*0.1), "rgba(34, 197, 94, " + op + ")");
-            grad.addColorStop(0.6 + (Math.cos(auroraOffset)*0.1), "rgba(168, 85, 247, " + op + ")");
-            grad.addColorStop(1, "transparent");
-            context.fillStyle = grad;
-            context.fillRect(0, 0, w, h * 0.6);
-            context.restore();
         }
 
         function updateComets() {
@@ -196,9 +177,10 @@
                 var c = comets[i];
                 var g = context.createLinearGradient(c.x, c.y, c.x + 150, c.y - 120);
                 g.addColorStop(0, "rgba(255, 255, 255," + c.l + ")");
+                g.addColorStop(0.2, "rgba(168, 85, 247, " + (c.l * 0.6) + ")");
                 g.addColorStop(1, "transparent");
                 context.strokeStyle = g;
-                context.lineWidth = 6; 
+                context.lineWidth = 5; 
                 context.lineCap = "round";
                 context.beginPath();
                 context.moveTo(c.x, c.y);
