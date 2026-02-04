@@ -3,52 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV V11</title>
+    <title>Birth Pulse - Cinematic TV V12</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
-            overflow: hidden; background-color: #000000; /* Pitch Black */
+            overflow: hidden; background-color: #000000;
             font-family: Arial, Helvetica, sans-serif; color: white;
         }
 
-        /* REALISTIC SHINING STARS */
+        /* 1. REALISTIC STARS */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
-            z-index: 0;
+            z-index: 1;
         }
         .star {
             position: absolute; background: white; border-radius: 50%;
-            box-shadow: 0 0 5px rgba(255,255,255,0.8);
+            box-shadow: 0 0 3px #fff;
             animation: twinkle var(--t) infinite ease-in-out;
-            will-change: opacity;
         }
-        @keyframes twinkle { 0%, 100% { opacity: 0.1; transform: scale(0.8); } 50% { opacity: 0.9; transform: scale(1.1); } }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.9; transform: scale(1.1); } }
 
-        /* NORTHERN LIGHTS (AURORA) - Zero CPU Load */
-        #aurora-container {
-            position: absolute; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none; opacity: 0;
-            transition: opacity 5s ease-in-out;
+        /* 2. NORTHERN LIGHTS (AURORA) */
+        .aurora-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 60%;
+            z-index: 2; pointer-events: none; opacity: 0.4;
+            background: linear-gradient(to bottom, transparent, transparent);
+            overflow: hidden;
         }
-        .aurora {
+        .aurora-curtain {
             position: absolute; width: 200%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.1), rgba(168, 85, 247, 0.1), transparent);
-            filter: blur(80px);
-            animation: drift 20s infinite linear;
+            background: repeating-linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(34, 197, 94, 0.2) 15%, 
+                rgba(168, 85, 247, 0.2) 30%, 
+                transparent 45%);
+            filter: blur(60px);
+            animation: moveAurora 25s infinite linear;
         }
-        @keyframes drift { from { transform: translateX(-50%); } to { transform: translateX(0%); } }
+        @keyframes moveAurora { from { transform: translateX(-50%); } to { transform: translateX(0%); } }
 
+        /* 3. LAYOUT */
         .ui-overlay {
             position: relative; z-index: 10; pointer-events: none;
             height: 100vh; padding: 6vh 6vw;
-        }
-
-        /* LOCK UI TO LEFT CENTER */
-        .stats-panel { 
-            position: absolute; top: 50%; left: 6vw; 
-            transform: translateY(-50%); width: 40vw; z-index: 100;
         }
 
         .main-heading {
@@ -58,10 +57,27 @@
             text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
         }
 
-        .globe-container {
-            position: fixed; right: -10vw; top: 0; width: 85vw; height: 100vh; z-index: 2;
+        .stats-panel { 
+            position: absolute; top: 50%; left: 6vw; 
+            transform: translateY(-50%); width: 38vw; z-index: 100;
+        }
+
+        .count {
+            font-size: 9vw; font-weight: 900; color: #fbbf24;
+            line-height: 1.1; margin: 0; 
+            text-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
         }
         
+        .progress-box { width: 90%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 20px; margin-top: 25px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; background: #fbbf24; box-shadow: 0 0 15px #fbbf24; }
+        #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; display: block; margin-top: 15px; }
+
+        .globe-container {
+            position: absolute; right: 0; top: 0; width: 60vw; height: 100vh; z-index: 5;
+        }
+
+        #main-canvas { width: 100%; height: 100%; }
+
         #loading {
             position: absolute; width: 100%; height: 100%;
             background: #000000; display: flex; align-items: center; 
@@ -71,40 +87,31 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING CINEMATIC ENVIRONMENT...</div>
+    <div id="loading">SYNCHRONIZING CINEMATIC ENGINE...</div>
     
-    <!-- BACKGROUND LAYERS -->
     <div class="stars-container" id="starfield"></div>
-    <div id="aurora-container">
-        <div class="aurora"></div>
-    </div>
+    <div class="aurora-layer"><div class="aurora-curtain"></div></div>
 
     <div class="globe-container">
         <canvas id="main-canvas"></canvas>
     </div>
 
     <div class="ui-overlay">
-        <div>
-            <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
-        </div>
+        <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
 
         <div class="stats-panel">
             <span class="text-[1.3vw] font-black tracking-[0.5em] text-yellow-500/80 uppercase mb-2 block">Global Birth Count Today</span>
-            <div id="birthCount" class="text-[9.5vw] font-black text-yellow-400 tabular-nums leading-none" style="text-shadow: 0 0 30px rgba(250, 204, 21, 0.5);">0</div>
+            <div id="birthCount" class="count">0</div>
             
             <div class="mt-8">
-                <div class="h-3.5 w-[32vw] bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
-                    <div id="progress-bar" class="h-full bg-yellow-500 shadow-[0_0_15px_#eab308]" style="width: 0%"></div>
-                </div>
-                <div class="mt-4 text-left">
-                    <span id="clock" class="text-yellow-400 font-bold tabular-nums tracking-[0.4em] text-[1.5vw]">00:00:00</span>
-                </div>
+                <div class="progress-box"><div id="bar" class="bar-fill"></div></div>
+                <span id="clock">00:00:00</span>
             </div>
         </div>
     </div>
 
     <script>
-        // TV-SAFE ES5 CODE
+        // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
         var ROTATION_SPEED = 0.42; 
         var worldData = null;
@@ -113,29 +120,23 @@
 
         var canvas = document.getElementById("main-canvas");
         var context = canvas.getContext("2d");
-        var width = window.innerWidth * 0.85;
-        var height = window.innerHeight;
-        var rotation = 0;
+        var w, h;
 
-        canvas.width = width;
-        canvas.height = height;
+        function setSizes() {
+            w = window.innerWidth;
+            h = window.innerHeight;
+            canvas.width = w;
+            canvas.height = h;
+        }
+        setSizes();
 
+        // Locked Centered-Right Position
         var projection = d3.geoOrthographic()
-            .scale(height / 2.9)
-            .translate([width / 1.9, height / 2])
+            .scale(h / 2.9)
+            .translate([w * 0.72, h / 2])
             .clipAngle(90);
 
         var path = d3.geoPath(projection, context);
-
-        // --- RANDOM AURORA TRIGGER ---
-        function triggerAurora() {
-            var container = document.getElementById('aurora-container');
-            // 30% chance to show Northern Lights every minute
-            if (Math.random() > 0.7) {
-                container.style.opacity = 0.4;
-                setTimeout(function() { container.style.opacity = 0; }, 15000);
-            }
-        }
 
         function init() {
             d3.json("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson").then(function(data) {
@@ -143,24 +144,25 @@
                 document.getElementById('loading').style.display = 'none';
                 renderLoop();
                 startSimulation();
-                setInterval(triggerAurora, 20000);
             });
         }
 
+        var rotation = 0;
         function renderLoop() {
             rotation += ROTATION_SPEED;
-            projection.rotate([rotation, -12]);
-            context.clearRect(0, 0, width, height);
+            projection.rotate([rotation, -15]);
+            context.clearRect(0, 0, w, h);
 
+            // 1. Draw Comets
             updateComets();
 
             var center = projection.translate();
             var radius = projection.scale();
 
-            // 1. Draw 3D Ocean Gradient
+            // 2. Draw 3D Ocean
             var oceanGrad = context.createRadialGradient(center[0]-radius/3, center[1]-radius/3, radius/10, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#0c2461");
-            oceanGrad.addColorStop(1, "#060d21");
+            oceanGrad.addColorStop(1, "#02040a");
             context.beginPath();
             context.arc(center[0], center[1], radius, 0, 2 * Math.PI);
             context.fillStyle = oceanGrad; 
@@ -173,13 +175,13 @@
                     context.beginPath();
                     path(feature);
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = "#fbbf24"; 
+                        context.fillStyle = "#fbbf24"; // Birth Flash
                     } else {
-                        context.fillStyle = "#4c1d95"; 
+                        context.fillStyle = "#4c1d95"; // Theme Purple
                     }
                     context.fill();
-                    context.strokeStyle = "#22d3ee";
-                    context.lineWidth = 0.6;
+                    context.strokeStyle = "rgba(34, 211, 238, 0.4)"; // Cyan borders
+                    context.lineWidth = 0.5;
                     context.stroke();
                 });
             }
@@ -187,23 +189,23 @@
         }
 
         function updateComets() {
-            if (Math.random() > 0.997) {
-                comets.push({ x: Math.random() * width, y: -100, vx: -14 - Math.random() * 6, vy: 10 + Math.random() * 6, life: 1.0 });
+            if (Math.random() > 0.996) {
+                comets.push({ x: Math.random()*w, y: -100, vx: -16, vy: 12, l: 1.0 });
             }
             for (var i = 0; i < comets.length; i++) {
                 var c = comets[i];
-                var grad = context.createLinearGradient(c.x, c.y, c.x + 100, c.y - 80);
-                grad.addColorStop(0, "rgba(255, 255, 255," + c.life + ")");
-                grad.addColorStop(1, "rgba(0, 0, 0, 0)");
-                context.strokeStyle = grad;
-                context.lineWidth = 6; /* Thick head for TV visibility */
+                var g = context.createLinearGradient(c.x, c.y, c.x + 150, c.y - 120);
+                g.addColorStop(0, "rgba(255, 255, 255," + c.l + ")");
+                g.addColorStop(1, "transparent");
+                context.strokeStyle = g;
+                context.lineWidth = 6; 
                 context.lineCap = "round";
                 context.beginPath();
                 context.moveTo(c.x, c.y);
-                context.lineTo(c.x + 140, c.y - 110);
+                context.lineTo(c.x + 160, c.y - 130);
                 context.stroke();
-                c.x += c.vx; c.y += c.vy; c.life -= 0.007;
-                if(c.life <= 0) { comets.splice(i, 1); i--; }
+                c.x += c.vx; c.y += c.vy; c.l -= 0.007;
+                if(c.l <= 0) { comets.splice(i, 1); i--; }
             }
         }
 
@@ -215,7 +217,7 @@
                 var total = Math.floor(elapsed * BIRTH_RATE);
                 document.getElementById('birthCount').innerText = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
-                document.getElementById('progress-bar').style.width = (elapsed / 86400 * 100) + "%";
+                document.getElementById('bar').style.width = (elapsed / 86400 * 100) + "%";
 
                 if (worldData) {
                     var idx = Math.floor(Math.random() * worldData.features.length);
@@ -225,18 +227,18 @@
             }, 1000 / BIRTH_RATE);
         }
 
-        // Generate stars with glow
+        // Generate static shimmering stars
         var field = document.getElementById('starfield');
         for (var i = 0; i < 100; i++) {
             var s = document.createElement('div');
             s.className = 'star';
-            s.style.width = s.style.height = (1 + Math.random() * 2.5) + 'px';
-            s.style.left = Math.random() * 100 + '%';
-            s.style.top = Math.random() * 100 + '%';
+            s.style.width = s.style.height = (1 + Math.random() * 2) + 'px';
+            s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%';
             s.style.setProperty('--t', (2 + Math.random() * 4) + 's');
             field.appendChild(s);
         }
 
+        window.onresize = setSizes;
         init();
     </script>
 </body>
