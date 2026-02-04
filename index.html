@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV V12</title>
+    <title>Birth Pulse - Cinematic TV V13</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,38 +13,20 @@
             font-family: Arial, Helvetica, sans-serif; color: white;
         }
 
-        /* 1. REALISTIC STARS */
+        /* 1. REALISTIC BLINKING STARS */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             z-index: 1;
         }
         .star {
             position: absolute; background: white; border-radius: 50%;
-            box-shadow: 0 0 3px #fff;
+            box-shadow: 0 0 4px #fff;
             animation: twinkle var(--t) infinite ease-in-out;
+            will-change: opacity;
         }
         @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.9; transform: scale(1.1); } }
 
-        /* 2. NORTHERN LIGHTS (AURORA) */
-        .aurora-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 60%;
-            z-index: 2; pointer-events: none; opacity: 0.4;
-            background: linear-gradient(to bottom, transparent, transparent);
-            overflow: hidden;
-        }
-        .aurora-curtain {
-            position: absolute; width: 200%; height: 100%;
-            background: repeating-linear-gradient(90deg, 
-                transparent 0%, 
-                rgba(34, 197, 94, 0.2) 15%, 
-                rgba(168, 85, 247, 0.2) 30%, 
-                transparent 45%);
-            filter: blur(60px);
-            animation: moveAurora 25s infinite linear;
-        }
-        @keyframes moveAurora { from { transform: translateX(-50%); } to { transform: translateX(0%); } }
-
-        /* 3. LAYOUT */
+        /* 2. UI LAYOUT */
         .ui-overlay {
             position: relative; z-index: 10; pointer-events: none;
             height: 100vh; padding: 6vh 6vw;
@@ -72,10 +54,10 @@
         .bar-fill { height: 100%; width: 0%; background: #fbbf24; box-shadow: 0 0 15px #fbbf24; }
         #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; display: block; margin-top: 15px; }
 
+        /* 3. GLOBE CONTAINER LOCKED */
         .globe-container {
-            position: absolute; right: 0; top: 0; width: 60vw; height: 100vh; z-index: 5;
+            position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 5;
         }
-
         #main-canvas { width: 100%; height: 100%; }
 
         #loading {
@@ -87,10 +69,9 @@
 </head>
 <body>
 
-    <div id="loading">SYNCHRONIZING CINEMATIC ENGINE...</div>
+    <div id="loading">SYNCHRONIZING CINEMATIC ENVIRONMENT...</div>
     
     <div class="stars-container" id="starfield"></div>
-    <div class="aurora-layer"><div class="aurora-curtain"></div></div>
 
     <div class="globe-container">
         <canvas id="main-canvas"></canvas>
@@ -117,6 +98,7 @@
         var worldData = null;
         var flashingISO = {}; 
         var comets = [];
+        var auroraOffset = 0;
 
         var canvas = document.getElementById("main-canvas");
         var context = canvas.getContext("2d");
@@ -130,10 +112,10 @@
         }
         setSizes();
 
-        // Locked Centered-Right Position
+        // ANCHORED POSITION (72% Width, 50% Height)
         var projection = d3.geoOrthographic()
             .scale(h / 2.9)
-            .translate([w * 0.72, h / 2])
+            .translate([w * 0.72, h * 0.5]) 
             .clipAngle(90);
 
         var path = d3.geoPath(projection, context);
@@ -153,13 +135,16 @@
             projection.rotate([rotation, -15]);
             context.clearRect(0, 0, w, h);
 
-            // 1. Draw Comets
+            // 1. Draw Canvas Aurora (Northern Lights)
+            drawAurora();
+
+            // 2. Draw Comets
             updateComets();
 
             var center = projection.translate();
             var radius = projection.scale();
 
-            // 2. Draw 3D Ocean
+            // 3. Draw 3D Ocean Gradient
             var oceanGrad = context.createRadialGradient(center[0]-radius/3, center[1]-radius/3, radius/10, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#0c2461");
             oceanGrad.addColorStop(1, "#02040a");
@@ -175,17 +160,32 @@
                     context.beginPath();
                     path(feature);
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = "#fbbf24"; // Birth Flash
+                        context.fillStyle = "#fbbf24"; 
                     } else {
-                        context.fillStyle = "#4c1d95"; // Theme Purple
+                        context.fillStyle = "#4c1d95"; 
                     }
                     context.fill();
-                    context.strokeStyle = "rgba(34, 211, 238, 0.4)"; // Cyan borders
+                    context.strokeStyle = "rgba(34, 211, 238, 0.3)";
                     context.lineWidth = 0.5;
                     context.stroke();
                 });
             }
             requestAnimationFrame(renderLoop);
+        }
+
+        function drawAurora() {
+            auroraOffset += 0.002;
+            context.save();
+            context.globalCompositeOperation = "screen";
+            var grad = context.createLinearGradient(0, 0, w, h*0.5);
+            var op = 0.15 + (Math.sin(auroraOffset * 5) * 0.05);
+            grad.addColorStop(0, "transparent");
+            grad.addColorStop(0.3 + (Math.sin(auroraOffset)*0.1), "rgba(34, 197, 94, " + op + ")");
+            grad.addColorStop(0.6 + (Math.cos(auroraOffset)*0.1), "rgba(168, 85, 247, " + op + ")");
+            grad.addColorStop(1, "transparent");
+            context.fillStyle = grad;
+            context.fillRect(0, 0, w, h * 0.6);
+            context.restore();
         }
 
         function updateComets() {
@@ -227,7 +227,6 @@
             }, 1000 / BIRTH_RATE);
         }
 
-        // Generate static shimmering stars
         var field = document.getElementById('starfield');
         for (var i = 0; i < 100; i++) {
             var s = document.createElement('div');
