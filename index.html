@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - TV Ultimate Smooth</title>
+    <title>Birth Pulse 2025 - Ultimate TV Daytime</title>
     <script src="https://unpkg.com/globe.gl"></script>
     <style>
         body, html {
@@ -35,7 +35,7 @@
 
         .main-heading {
             position: absolute; top: 5vh; left: 5vw;
-            font-size: 2.8vw; color: #a855f7; 
+            font-size: 2.8vw; color: #a855f7; /* Purple Heading */
             font-weight: 800; text-transform: uppercase;
             letter-spacing: 2px; z-index: 110;
             text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
@@ -50,14 +50,14 @@
         }
 
         .label { 
-            font-size: 1.4vw; color: #38bdf8; 
+            font-size: 1.4vw; color: #38bdf8; /* Cyan Label */
             text-transform: uppercase; font-weight: bold; letter-spacing: 3px;
             margin-bottom: 5px;
         }
 
         .count {
-            font-size: 8.5vw; font-weight: 900; color: #fbbf24;
-            line-height: 1; margin: 0; 
+            font-size: 8.5vw; font-weight: 900; color: #fbbf24; /* Gold Count */
+            line-height: 1.1; margin: 0; 
             filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.5));
         }
         
@@ -121,7 +121,7 @@
         function drawComets() {
             cCanvas.width = window.innerWidth; cCanvas.height = window.innerHeight;
             cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
-            if (Math.random() > 0.997) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -14, vy: 11, l: 1 });
+            if (Math.random() > 0.997) comets.push({ x: Math.random()*cCanvas.width, y: -50, vx: -14, vy: 11, life: 1 });
             for(var i=0; i<comets.length; i++) {
                 var c = comets[i];
                 var g = cCtx.createLinearGradient(c.x, c.y, c.x + 80, c.y - 60);
@@ -147,7 +147,7 @@
             var lastT = Date.now();
             var carry = 0;
             
-            // THROTTLED LOOP: Only update map state twice per second to keep rotation smooth
+            // THROTTLED LOOP: Only update map twice per second to keep rotation smooth
             setInterval(function() {
                 var now = Date.now();
                 carry += (now - lastT) * BIRTH_RATE;
