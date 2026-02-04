@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - TV Pro Cinematic V9</title>
+    <title>Birth Pulse - TV Cinematic V10</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -11,27 +11,27 @@
             margin: 0; padding: 0; width: 100vw; height: 100vh;
             overflow: hidden; background-color: #010409;
             font-family: Arial, Helvetica, sans-serif; color: white;
+            transition: background 2s ease; /* Smooth sky transition */
         }
 
-        /* GPU ACCELERATED STARS */
+        /* BACKGROUND SKY (Changes with time) */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #0c1e3e 0%, #010409 100%);
             z-index: 0;
+            transition: opacity 2s ease;
         }
         .star {
             position: absolute; background: white; border-radius: 50%;
             animation: twinkle var(--duration) infinite ease-in-out;
         }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.9; } }
 
-        /* UI OVERLAY */
         .ui-overlay {
             position: relative; z-index: 10; pointer-events: none;
             height: 100vh; padding: 6vh 6vw;
         }
 
-        /* LEFT CENTRE ALIGNMENT */
+        /* LOCK UI TO LEFT CENTER */
         .stats-panel { 
             position: absolute; top: 50%; left: 6vw; 
             transform: translateY(-50%); width: 40vw; z-index: 100;
@@ -39,7 +39,14 @@
 
         .neon-text { text-shadow: 0 0 30px rgba(250, 204, 21, 0.5); }
 
-        /* GLOBE POSITIONING */
+        .main-heading {
+            position: absolute; top: 7vh; left: 6vw;
+            font-size: 2.6vw; color: #a855f7; 
+            font-weight: 800; z-index: 110;
+            text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+            /* Removed Uppercase transformation */
+        }
+
         .globe-container {
             position: fixed; right: -10vw; top: 0; width: 85vw; height: 100vh; z-index: 1;
         }
@@ -53,19 +60,16 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING CINEMATIC ENVIRONMENT...</div>
+    <div id="loading">CALIBRATING TIME & SPACE...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
-        <!-- One canvas handles both Globe and Comets for maximum performance -->
         <canvas id="main-canvas"></canvas>
     </div>
 
     <div class="ui-overlay">
         <div>
-            <h1 class="text-[2.6vw] font-black text-[#D946EF] tracking-[0.2em] uppercase">
-                Mother & Child Care-Women's Health
-            </h1>
+            <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
         </div>
 
         <div class="stats-panel">
@@ -76,7 +80,6 @@
                 <div class="h-3.5 w-[32vw] bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
                     <div id="progress-bar" class="h-full bg-yellow-500 shadow-[0_0_15px_#eab308]" style="width: 0%"></div>
                 </div>
-                <!-- CLOCK SIZE REDUCED BY 30% (to 1.5vw) -->
                 <div class="mt-4 text-left">
                     <span id="clock" class="text-yellow-400 font-bold tabular-nums tracking-[0.4em] text-[1.5vw]">00:00:00</span>
                 </div>
@@ -85,7 +88,7 @@
     </div>
 
     <script>
-        // TV-SAFE ES5 CODE
+        // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
         var ROTATION_SPEED = 0.42; 
         var worldData = null;
@@ -101,7 +104,6 @@
         canvas.width = width;
         canvas.height = height;
 
-        // SCALE & POSITION (Vertically centered at height/2)
         var projection = d3.geoOrthographic()
             .scale(height / 2.9)
             .translate([width / 1.9, height / 2])
@@ -109,10 +111,26 @@
 
         var path = d3.geoPath(projection, context);
 
+        function updateSpaceLighting() {
+            var now = new Date();
+            var hour = now.getHours();
+            // Intensity peaks at 12:00 (1.0) and bottoms at 00:00 (0.0)
+            var intensity = Math.abs(Math.sin(((hour - 6) / 24) * Math.PI));
+            
+            // Map intensity to colors: 0.0 = Black, 1.0 = Light Blue
+            var r = Math.floor(1 + (15 * intensity));
+            var g = Math.floor(4 + (40 * intensity));
+            var b = Math.floor(9 + (80 * intensity));
+            
+            document.body.style.backgroundColor = "rgb(" + r + "," + g + "," + b + ")";
+            document.getElementById('starfield').style.opacity = (1.1 - intensity);
+        }
+
         function init() {
             d3.json("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson").then(function(data) {
                 worldData = data;
                 document.getElementById('loading').style.display = 'none';
+                updateSpaceLighting();
                 renderLoop();
                 startSimulation();
             });
@@ -121,23 +139,17 @@
         function renderLoop() {
             rotation += ROTATION_SPEED;
             projection.rotate([rotation, -12]);
-            
             context.clearRect(0, 0, width, height);
 
-            // 1. Draw Space Comets
             updateComets();
 
             var center = projection.translate();
             var radius = projection.scale();
 
-            // 2. Draw 3D Ocean Gradient
-            var oceanGrad = context.createRadialGradient(
-                center[0] - radius/3, center[1] - radius/3, radius/10,
-                center[0], center[1], radius
-            );
+            // Draw 3D Ocean
+            var oceanGrad = context.createRadialGradient(center[0]-radius/3, center[1]-radius/3, radius/10, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#0c2461");
             oceanGrad.addColorStop(1, "#060d21");
-
             context.beginPath();
             context.arc(center[0], center[1], radius, 0, 2 * Math.PI);
             context.fillStyle = oceanGrad; 
@@ -145,56 +157,53 @@
 
             if (worldData) {
                 var now = Date.now();
-                
-                // 3. Draw Countries (Deep Purple Theme)
                 worldData.features.forEach(function(feature) {
                     var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3;
                     context.beginPath();
                     path(feature);
-                    
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = "#fbbf24"; // Birth Flash Gold
+                        context.fillStyle = "#fbbf24"; 
                     } else {
-                        context.fillStyle = "#4c1d95"; // Royal Purple Land
+                        context.fillStyle = "#4c1d95"; 
                     }
-                    
                     context.fill();
-                    context.strokeStyle = "#22d3ee"; // Electric Cyan Borders
+                    context.strokeStyle = "#22d3ee";
                     context.lineWidth = 0.6;
                     context.stroke();
                 });
             }
-
             requestAnimationFrame(renderLoop);
         }
 
         function updateComets() {
-            if (Math.random() > 0.998) {
+            if (Math.random() > 0.996) {
                 comets.push({
                     x: Math.random() * width,
-                    y: -50,
-                    vx: -12 - Math.random() * 5,
-                    vy: 8 + Math.random() * 5,
+                    y: -100,
+                    vx: -15 - Math.random() * 8,
+                    vy: 10 + Math.random() * 8,
                     life: 1.0
                 });
             }
 
             for (var i = 0; i < comets.length; i++) {
                 var c = comets[i];
-                var grad = context.createLinearGradient(c.x, c.y, c.x + 80, c.y - 60);
+                // Thicker trail for TV visibility
+                var grad = context.createLinearGradient(c.x, c.y, c.x + 120, c.y - 100);
                 grad.addColorStop(0, "rgba(255, 255, 255," + c.life + ")");
+                grad.addColorStop(0.2, "rgba(255, 255, 255, " + (c.life * 0.8) + ")");
                 grad.addColorStop(1, "rgba(168, 85, 247, 0)");
                 
                 context.strokeStyle = grad;
-                context.lineWidth = 3;
+                context.lineWidth = 6; /* Much thicker head */
                 context.lineCap = "round";
                 context.beginPath();
                 context.moveTo(c.x, c.y);
-                context.lineTo(c.x + 100, c.y - 75);
+                context.lineTo(c.x + 140, c.y - 110);
                 context.stroke();
                 
-                c.x += c.vx; c.y += c.vy; c.life -= 0.008;
-                if (c.life <= 0) { comets.splice(i, 1); i--; }
+                c.x += c.vx; c.y += c.vy; c.life -= 0.007;
+                if(c.life <= 0) { comets.splice(i, 1); i--; }
             }
         }
 
@@ -204,10 +213,10 @@
                 var start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                 var elapsed = (Date.now() - start) / 1000;
                 var total = Math.floor(elapsed * BIRTH_RATE);
-                
                 document.getElementById('birthCount').innerText = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
                 document.getElementById('progress-bar').style.width = (elapsed / 86400 * 100) + "%";
+                updateSpaceLighting();
 
                 if (worldData) {
                     var idx = Math.floor(Math.random() * worldData.features.length);
@@ -217,15 +226,15 @@
             }, 1000 / BIRTH_RATE);
         }
 
-        // Space Stars
+        // Generate stars
         var field = document.getElementById('starfield');
-        for (var i = 0; i < 70; i++) {
+        for (var i = 0; i < 100; i++) {
             var s = document.createElement('div');
             s.className = 'star';
-            s.style.width = s.style.height = (1 + Math.random() * 2) + 'px';
+            s.style.width = s.style.height = (1 + Math.random() * 2.5) + 'px';
             s.style.left = Math.random() * 100 + '%';
             s.style.top = Math.random() * 100 + '%';
-            s.style.setProperty('--duration', (2 + Math.random() * 3) + 's');
+            s.style.setProperty('--duration', (2 + Math.random() * 4) + 's');
             field.appendChild(s);
         }
 
