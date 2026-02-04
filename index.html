@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - TV Pro Edition</title>
+    <title>Birth Pulse - TV Pro Daytime V6</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,7 +13,7 @@
             font-family: Arial, sans-serif; color: white;
         }
 
-        /* HARDWARE ACCELERATED STARS */
+        /* GPU ACCELERATED STARS */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #0c1e3e 0%, #010409 100%);
@@ -23,7 +23,7 @@
             position: absolute; background: white; border-radius: 50%;
             animation: twinkle var(--duration) infinite ease-in-out;
         }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.9; } }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
 
         .ui-overlay {
             position: relative; z-index: 10; pointer-events: none;
@@ -33,14 +33,14 @@
         /* LOCK UI TO LEFT CENTER */
         .stats-panel { 
             position: absolute; top: 50%; left: 6vw; 
-            transform: translateY(-50%); width: 38vw; z-index: 100;
+            transform: translateY(-50%); width: 40vw; z-index: 100;
         }
 
         .neon-text { text-shadow: 0 0 30px rgba(250, 204, 21, 0.5); }
 
-        /* SHRINK AND PUSH GLOBE TO RIGHT */
+        /* GLOBE POSITIONED RIGHT BUT NUDGED 1CM LEFT */
         .globe-container {
-            position: fixed; right: -12vw; top: 0; width: 80vw; height: 100vh; z-index: 1;
+            position: fixed; right: -8vw; top: 0; width: 85vw; height: 100vh; z-index: 1;
         }
         
         #loading {
@@ -52,7 +52,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING FOR PHILIPS TV...</div>
+    <div id="loading">CALIBRATING HIGH-VISIBILITY GLOBE...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -72,11 +72,11 @@
             <div id="birthCount" class="text-[9.5vw] font-black text-yellow-400 tabular-nums leading-none neon-text">0</div>
             
             <div class="mt-8">
-                <div class="h-3 w-[32vw] bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
+                <div class="h-3.5 w-[32vw] bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
                     <div id="progress-bar" class="h-full bg-yellow-500 shadow-[0_0_15px_#eab308]" style="width: 0%"></div>
                 </div>
-                <!-- CLOCK POSITIONED CLOSE TO BAR, LEFT ALIGNED -->
-                <div class="mt-4">
+                <!-- CLOCK LEFT ALIGNED CLOSE TO BAR -->
+                <div class="mt-4 text-left">
                     <span id="clock" class="text-yellow-400 font-bold tabular-nums tracking-[0.4em] text-[2.2vw]">00:00:00</span>
                 </div>
             </div>
@@ -84,25 +84,25 @@
     </div>
 
     <script>
-        // TV-SAFE ES5 CODE
+        // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
-        var ROTATION_SPEED = 0.22;
+        var ROTATION_SPEED = 0.29; // Increased by 1.3x (from 0.22)
         var worldData = null;
         var flashingISO = {}; 
 
         var canvas = document.getElementById("globe-canvas");
         var context = canvas.getContext("2d");
-        var width = window.innerWidth * 0.8;
+        var width = window.innerWidth * 0.85;
         var height = window.innerHeight;
         var rotation = 0;
 
         canvas.width = width;
         canvas.height = height;
 
-        // SCALE 0.8x (Reduced from height/2.3 to height/2.9)
+        // SCALE 0.8x | NUDGED LEFT (Changed width / 1.6 to width / 1.9)
         var projection = d3.geoOrthographic()
             .scale(height / 2.9)
-            .translate([width / 1.6, height / 2])
+            .translate([width / 1.9, height / 2])
             .clipAngle(90);
 
         var path = d3.geoPath(projection, context);
@@ -122,10 +122,11 @@
             
             context.clearRect(0, 0, width, height);
 
-            // 1. Draw Oceans (Vibrant Daytime Blue)
+            // 1. Draw Oceans (Realistic Deep Blue)
             context.beginPath();
-            context.arc(width / 1.6, height / 2, projection.scale(), 0, 2 * Math.PI);
-            context.fillStyle = "#004e92"; 
+            var center = projection.translate();
+            context.arc(center[0], center[1], projection.scale(), 0, 2 * Math.PI);
+            context.fillStyle = "#003366"; 
             context.fill();
 
             if (worldData) {
@@ -139,14 +140,14 @@
                     
                     // CHECK FOR GOLD FLASH
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = "#fbbf24"; 
+                        context.fillStyle = "#fbbf24"; // SOLID GOLD
                     } else {
-                        context.fillStyle = "#00d2ff"; // High visibility Teal Land
+                        context.fillStyle = "#059669"; // BRIGHT EMERALD LAND
                     }
                     
                     context.fill();
-                    context.strokeStyle = "rgba(255,255,255,0.4)"; // Visible borders
-                    context.lineWidth = 0.6;
+                    context.strokeStyle = "rgba(255,255,255,0.8)"; // Bolder borders for visibility
+                    context.lineWidth = 0.7;
                     context.stroke();
                 });
             }
@@ -161,12 +162,10 @@
                 var elapsed = (Date.now() - start) / 1000;
                 var total = Math.floor(elapsed * BIRTH_RATE);
                 
-                // Dot Formatter
                 document.getElementById('birthCount').innerText = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
                 document.getElementById('progress-bar').style.width = (elapsed / 86400 * 100) + "%";
 
-                // Simulated country flashes
                 if (worldData) {
                     var idx = Math.floor(Math.random() * worldData.features.length);
                     var iso = worldData.features[idx].properties.ISO_A3 || worldData.features[idx].properties.ADM0_A3;
@@ -177,10 +176,10 @@
 
         // Generate Stars
         var field = document.getElementById('starfield');
-        for (var i = 0; i < 80; i++) {
+        for (var i = 0; i < 70; i++) {
             var s = document.createElement('div');
             s.className = 'star';
-            s.style.width = s.style.height = (1 + Math.random() * 2.5) + 'px';
+            s.style.width = s.style.height = (1 + Math.random() * 2) + 'px';
             s.style.left = Math.random() * 100 + '%';
             s.style.top = Math.random() * 100 + '%';
             s.style.setProperty('--duration', (2 + Math.random() * 3) + 's');
