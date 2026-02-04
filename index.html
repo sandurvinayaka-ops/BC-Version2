@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV V15</title>
+    <title>Birth Pulse - Cinematic Realistic V16</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -67,7 +67,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING CINEMATIC VISUALS...</div>
+    <div id="loading">RENDERING REALISTIC DAYTIME WORLD...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -89,9 +89,9 @@
     </div>
 
     <script>
-        // TV-SAFE ES5 CODE (LEGACY COMPATIBLE)
+        // TV-SAFE ES5 CODE
         var BIRTH_RATE = 4.34;
-        var ROTATION_SPEED = 0.42; 
+        var ROTATION_SPEED = 0.45; 
         var PACIFIER_SVG = "M12,2A5,5,0,0,0,7,7v2c-2,0-3,1-3,3s1,3,3,3v2a5,5,0,0,0,10,0V15c2,0,3-1,3-3s-1-3-3-3V7A5,5,0,0,0,12,2Zm3,7H9V7a3,3,0,0,1,6,0Zm0,9a3,3,0,0,1-6,0V17h6Z";
         
         var worldData = null;
@@ -109,7 +109,7 @@
         }
         setSizes();
 
-        // 0.8x SIZE & FIXED ANCHOR RIGHT
+        // 0.8x SIZE & ANCHOR RIGHT
         var projection = d3.geoOrthographic()
             .scale(h / 3.4)
             .translate([w * 0.72, h * 0.5]) 
@@ -118,14 +118,14 @@
         var path = d3.geoPath(projection, context);
 
         // --- INIT BACKGROUND ELEMENTS ---
-        for(var i=0; i<120; i++) {
+        for(var i=0; i<100; i++) {
             stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 });
         }
         for(var i=0; i<6; i++) {
             floaters.push({
                 x: Math.random()*w, y: Math.random()*h,
-                vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
-                rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1.2,
+                vx: (Math.random()-0.5)*0.2, vy: (Math.random()-0.5)*0.2,
+                rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1,
                 phase: Math.random()*5
             });
         }
@@ -145,7 +145,7 @@
             projection.rotate([rotation, -15]);
             context.clearRect(0, 0, w, h);
 
-            // 1. Stars (CPU Safe)
+            // 1. Stars (Blinking)
             context.fillStyle = "white";
             var time = Date.now() * 0.001;
             for(var i=0; i<stars.length; i++) {
@@ -161,21 +161,21 @@
             var center = projection.translate();
             var radius = projection.scale();
 
-            // 3. Realistic 3D Globe Shading (Oceans)
+            // 3. Realistic Lighter Ocean Gradient
             var oceanGrad = context.createRadialGradient(
-                center[0] - radius/2.5, center[1] - radius/2.5, radius/10,
+                center[0] - radius/2.5, center[1] - radius/2.5, radius/20,
                 center[0], center[1], radius
             );
-            oceanGrad.addColorStop(0, "#2563eb"); // Bright Surface Blue
-            oceanGrad.addColorStop(0.5, "#1e3a8a"); // Mid Depth Blue
-            oceanGrad.addColorStop(1, "#020617"); // Dark Space Edge
+            oceanGrad.addColorStop(0, "#60a5fa"); // Light Azure Sun-glint
+            oceanGrad.addColorStop(0.4, "#3b82f6"); // Realistic Blue
+            oceanGrad.addColorStop(1, "#1e3a8a"); // Deep Navy Edge
             
             context.beginPath();
             context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; 
             context.fill();
 
-            // 4. Draw Countries (Cinematic Scheme)
+            // 4. Draw Countries (Luminous Realistic Tones)
             if (worldData) {
                 var now = Date.now();
                 worldData.features.forEach(function(feature) {
@@ -184,14 +184,14 @@
                     path(feature);
                     
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = "#fbbf24"; // Gold Pulse
+                        context.fillStyle = "#fbbf24"; // Birth Gold
                     } else {
-                        context.fillStyle = "#312e81"; // Polished Midnight Indigo
+                        context.fillStyle = "#6366f1"; // Luminous Slate Blue
                     }
                     
                     context.fill();
-                    context.strokeStyle = "rgba(34, 211, 238, 0.5)"; // Glowing Cyan Borders
-                    context.lineWidth = 0.6;
+                    context.strokeStyle = "rgba(255, 255, 255, 0.4)"; // Soft White Borders
+                    context.lineWidth = 0.5;
                     context.stroke();
                 });
             }
