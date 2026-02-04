@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - TV Ultimate Edition</title>
+    <title>Birth Pulse - TV Pro Edition</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,7 +13,7 @@
             font-family: Arial, sans-serif; color: white;
         }
 
-        /* REALISTIC SHIMMERING STARS */
+        /* HARDWARE ACCELERATED STARS */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #0c1e3e 0%, #010409 100%);
@@ -27,20 +27,20 @@
 
         .ui-overlay {
             position: relative; z-index: 10; pointer-events: none;
-            height: 100vh; padding: 5vh 5vw;
-            display: flex; flex-direction: column; justify-content: space-between;
+            height: 100vh; padding: 6vh 6vw;
         }
 
-        /* LEFT CENTRE ALIGNMENT */
+        /* LOCK UI TO LEFT CENTER */
         .stats-panel { 
             position: absolute; top: 50%; left: 6vw; 
-            transform: translateY(-50%); width: 40vw; z-index: 100;
+            transform: translateY(-50%); width: 38vw; z-index: 100;
         }
 
-        .neon-text { text-shadow: 0 0 30px rgba(250, 204, 21, 0.6); }
+        .neon-text { text-shadow: 0 0 30px rgba(250, 204, 21, 0.5); }
 
+        /* SHRINK AND PUSH GLOBE TO RIGHT */
         .globe-container {
-            position: fixed; right: -10vw; top: 0; width: 80vw; height: 100vh; z-index: 1;
+            position: fixed; right: -12vw; top: 0; width: 80vw; height: 100vh; z-index: 1;
         }
         
         #loading {
@@ -52,7 +52,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING SMOOTH ROTATION...</div>
+    <div id="loading">OPTIMIZING FOR PHILIPS TV...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -61,37 +61,34 @@
 
     <div class="ui-overlay">
         <div>
-            <h1 class="text-[2.5vw] font-black text-[#D946EF] tracking-[0.3em] uppercase">
-                Mother & Child Care — Women's Health
+            <h1 class="text-[2.6vw] font-black text-[#D946EF] tracking-[0.2em] uppercase">
+                Mother & Child Care-Women's Health
             </h1>
-            <div class="h-[4px] w-[35vw] bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.7)] mt-2"></div>
+            <div class="h-[4px] w-[30vw] bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.7)] mt-2"></div>
         </div>
 
         <div class="stats-panel">
             <span class="text-[1.3vw] font-black tracking-[0.5em] text-yellow-500/80 uppercase mb-2 block">Global Birth Count Today</span>
-            <div id="birthCount" class="text-[9vw] font-black text-yellow-400 tabular-nums leading-none neon-text">0</div>
+            <div id="birthCount" class="text-[9.5vw] font-black text-yellow-400 tabular-nums leading-none neon-text">0</div>
             
-            <div class="mt-10 space-y-4">
-                <div class="h-3 w-[30vw] bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
-                    <div id="progress-bar" class="h-full bg-yellow-500 shadow-[0_0_20px_#eab308]" style="width: 0%"></div>
+            <div class="mt-8">
+                <div class="h-3 w-[32vw] bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-yellow-500 shadow-[0_0_15px_#eab308]" style="width: 0%"></div>
                 </div>
-                <div class="inline-block bg-black/50 border border-yellow-500/20 px-8 py-4 rounded-xl mt-4">
-                    <span id="clock" class="text-yellow-400 font-bold tabular-nums tracking-[0.3em] text-[2vw]">00:00:00</span>
+                <!-- CLOCK POSITIONED CLOSE TO BAR, LEFT ALIGNED -->
+                <div class="mt-4">
+                    <span id="clock" class="text-yellow-400 font-bold tabular-nums tracking-[0.4em] text-[2.2vw]">00:00:00</span>
                 </div>
             </div>
-        </div>
-
-        <div class="text-[0.8vw] font-bold text-slate-600 tracking-[0.5em] uppercase">
-            Active Telemetry Stream — Source: Demographic Matrix
         </div>
     </div>
 
     <script>
-        // TV-SAFE ES5 SCRIPT
+        // TV-SAFE ES5 CODE
         var BIRTH_RATE = 4.34;
         var ROTATION_SPEED = 0.22;
         var worldData = null;
-        var flashingISO = {}; // Tracks which country is flashing gold
+        var flashingISO = {}; 
 
         var canvas = document.getElementById("globe-canvas");
         var context = canvas.getContext("2d");
@@ -102,9 +99,10 @@
         canvas.width = width;
         canvas.height = height;
 
+        // SCALE 0.8x (Reduced from height/2.3 to height/2.9)
         var projection = d3.geoOrthographic()
-            .scale(height / 2.3)
-            .translate([width / 1.7, height / 2])
+            .scale(height / 2.9)
+            .translate([width / 1.6, height / 2])
             .clipAngle(90);
 
         var path = d3.geoPath(projection, context);
@@ -113,20 +111,20 @@
             d3.json("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson").then(function(data) {
                 worldData = data;
                 document.getElementById('loading').style.display = 'none';
-                render();
+                renderLoop();
                 startSimulation();
             });
         }
 
-        function render() {
+        function renderLoop() {
             rotation += ROTATION_SPEED;
             projection.rotate([rotation, -12]);
             
             context.clearRect(0, 0, width, height);
 
-            // 1. Draw Oceans (Daytime Blue)
+            // 1. Draw Oceans (Vibrant Daytime Blue)
             context.beginPath();
-            context.arc(width / 1.7, height / 2, projection.scale(), 0, 2 * Math.PI);
+            context.arc(width / 1.6, height / 2, projection.scale(), 0, 2 * Math.PI);
             context.fillStyle = "#004e92"; 
             context.fill();
 
@@ -139,36 +137,36 @@
                     context.beginPath();
                     path(feature);
                     
-                    // Check if this country is currently flashing
+                    // CHECK FOR GOLD FLASH
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = "#fbbf24"; // FULL GOLD FLASH
+                        context.fillStyle = "#fbbf24"; 
                     } else {
-                        context.fillStyle = "#00d2ff"; // DAYTIME TEAL LAND
+                        context.fillStyle = "#00d2ff"; // High visibility Teal Land
                     }
                     
                     context.fill();
-                    context.strokeStyle = "rgba(255,255,255,0.3)";
-                    context.lineWidth = 0.5;
+                    context.strokeStyle = "rgba(255,255,255,0.4)"; // Visible borders
+                    context.lineWidth = 0.6;
                     context.stroke();
                 });
             }
 
-            requestAnimationFrame(render);
+            requestAnimationFrame(renderLoop);
         }
 
         function startSimulation() {
-            // UI Thread
             setInterval(function() {
                 var now = new Date();
                 var start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                 var elapsed = (Date.now() - start) / 1000;
                 var total = Math.floor(elapsed * BIRTH_RATE);
                 
+                // Dot Formatter
                 document.getElementById('birthCount').innerText = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
                 document.getElementById('progress-bar').style.width = (elapsed / 86400 * 100) + "%";
 
-                // Trigger random birth flash
+                // Simulated country flashes
                 if (worldData) {
                     var idx = Math.floor(Math.random() * worldData.features.length);
                     var iso = worldData.features[idx].properties.ISO_A3 || worldData.features[idx].properties.ADM0_A3;
@@ -177,7 +175,7 @@
             }, 1000 / BIRTH_RATE);
         }
 
-        // --- STARS ---
+        // Generate Stars
         var field = document.getElementById('starfield');
         for (var i = 0; i < 80; i++) {
             var s = document.createElement('div');
