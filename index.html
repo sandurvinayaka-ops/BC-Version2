@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Pro V27</title>
+    <title>Birth Pulse - Cinematic TV Pro V28</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -34,8 +34,7 @@
 
         .main-heading {
             position: absolute; top: 7vh; left: 6vw;
-            font-size: 3.1vw; /* 1.2x bigger */
-            color: #a855f7; 
+            font-size: 3.1vw; color: #a855f7; 
             font-weight: 800; z-index: 110;
             text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
         }
@@ -48,7 +47,7 @@
         .label { 
             font-size: 1.3vw; color: #38bdf8; 
             text-transform: uppercase; 
-            font-weight: 900; /* Extra Bold */
+            font-weight: 900; 
             letter-spacing: 3px;
             margin-bottom: 5px;
         }
@@ -79,7 +78,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING PHOTOREALISTIC RENDERING...</div>
+    <div id="loading">OPTIMIZING ATMOSPHERIC ENGINE...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -104,15 +103,15 @@
     </div>
 
     <script>
-        // TV-SAFE ES5
+        // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
         var AUTO_ROTATION_SPEED = 0.42; 
         
         var globeThemes = [
-            { land: "#4ade80", oCore: "#1e40af", oEdge: "#0f172a" }, // Emerald / Blue
-            { land: "#fb7185", oCore: "#4c0519", oEdge: "#1a0105" }, // Rose / Red
-            { land: "#22d3ee", oCore: "#0e7490", oEdge: "#083344" }, // Cyan / Teal
-            { land: "#facc15", oCore: "#713f12", oEdge: "#422006" }  // Amber / Brown
+            { land: "#4ade80", oCore: "#1e3a8a", oEdge: "#0f172a" }, // Emerald
+            { land: "#fb7185", oCore: "#4c0519", oEdge: "#1a0105" }, // Rose
+            { land: "#22d3ee", oCore: "#0e7490", oEdge: "#083344" }, // Cyan
+            { land: "#facc15", oCore: "#713f12", oEdge: "#422006" }  // Amber (Yellow)
         ];
         var currentThemeIdx = 0;
         
@@ -192,20 +191,30 @@
             // 2. Realistic Comets
             drawRealisticComets();
 
-            // 3. Realistic 3D Pacifiers
+            // 3. 3D Pacifiers
             draw3DPacifiers();
 
             var center = projection.translate();
             var radius = projection.scale();
             var theme = globeThemes[currentThemeIdx];
 
-            // 4. Atmosphere Glow
-            var glow = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 50);
-            glow.addColorStop(0, "rgba(168, 85, 247, 0.2)"); glow.addColorStop(1, "transparent");
-            context.beginPath(); context.arc(center[0], center[1], radius + 50, 0, 7);
-            context.fillStyle = glow; context.fill();
+            // 4. IMPROVED ATMOSPHERE GLOW
+            // Layer A: Deep Soft Glow
+            var glowSoft = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 60);
+            glowSoft.addColorStop(0, "rgba(168, 85, 247, 0.2)");
+            glowSoft.addColorStop(1, "transparent");
+            context.beginPath(); context.arc(center[0], center[1], radius + 60, 0, 7);
+            context.fillStyle = glowSoft; context.fill();
 
-            // 5. Ocean (Deep blue gradient)
+            // Layer B: Bright Rim
+            var glowRim = context.createRadialGradient(center[0], center[1], radius - 10, center[0], center[1], radius + 5);
+            glowRim.addColorStop(0, "transparent");
+            glowRim.addColorStop(0.8, "rgba(34, 211, 238, 0.3)");
+            glowRim.addColorStop(1, "transparent");
+            context.beginPath(); context.arc(center[0], center[1], radius + 5, 0, 7);
+            context.fillStyle = glowRim; context.fill();
+
+            // 5. Ocean
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#3b82f6"); 
             oceanGrad.addColorStop(0.4, theme.oCore);
@@ -213,16 +222,20 @@
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; context.fill();
 
-            // 6. Countries
+            // 6. Countries (Smart Flash Logic)
             if (worldData) {
                 var now = Date.now();
+                var currentLandColor = theme.land;
+                // If land is yellow/gold, use WHITE flash, otherwise use GOLD flash
+                var activeFlashColor = (currentLandColor === "#facc15") ? "#ffffff" : "#fbbf24";
+
                 worldData.features.forEach(function(feature) {
                     var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3;
                     context.beginPath(); path(feature);
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = "#fbbf24"; 
+                        context.fillStyle = activeFlashColor; 
                     } else {
-                        context.fillStyle = theme.land; 
+                        context.fillStyle = currentLandColor; 
                     }
                     context.fill();
                     context.strokeStyle = "rgba(255, 255, 255, 0.4)";
@@ -233,28 +246,25 @@
         }
 
         function draw3DPacifiers() {
-            var time = Date.now() * 0.001;
+            var timeNow = Date.now() * 0.001;
             for (var i = 0; i < floaters.length; i++) {
                 var f = floaters[i];
                 f.x += f.vx; f.y += f.vy; f.rot += f.rSpeed;
                 if(f.x < -100) f.x = w + 100; if(f.x > w + 100) f.x = -100;
                 if(f.y < -100) f.y = h + 100; if(f.y > h + 100) f.y = -100;
 
-                var bob = Math.sin(time + f.phase) * 8;
+                var bob = Math.sin(timeNow + f.phase) * 8;
                 context.save();
                 context.translate(f.x, f.y + bob);
                 context.rotate(f.rot * Math.PI / 180);
-                context.scale(0.35, 0.35); // Approx 50% scale
+                context.scale(0.35, 0.35); 
 
                 // RADIUM GREEN GLOW
-                context.shadowBlur = 40;
-                context.shadowColor = "#ccff00";
+                context.shadowBlur = 40; context.shadowColor = "#ccff00";
 
-                // 1. Butterfly Shield Wings
+                // Shield Wings
                 var wingGrad = context.createLinearGradient(-50, -40, 50, 40);
-                wingGrad.addColorStop(0, "#bae6fd"); // Light Blue
-                wingGrad.addColorStop(1, "#fb923c"); // Coral
-                
+                wingGrad.addColorStop(0, "#bae6fd"); wingGrad.addColorStop(1, "#fb923c");
                 context.beginPath();
                 context.moveTo(-35, -20);
                 context.bezierCurveTo(-60, -50, -60, 50, -35, 20);
@@ -263,22 +273,16 @@
                 context.bezierCurveTo(15, -15, -15, -15, -35, -20);
                 context.fillStyle = wingGrad; context.fill();
 
-                // 2. Center Button (Dome)
+                // Dome Button
                 var domeGrad = context.createRadialGradient(-5, -5, 2, 0, 0, 22);
-                domeGrad.addColorStop(0, "#ffffff"); // Shiny Highlight
-                domeGrad.addColorStop(1, "#bae6fd"); // Base Blue
-                
-                context.beginPath();
-                context.arc(0, 0, 22, 0, 7);
+                domeGrad.addColorStop(0, "#ffffff"); domeGrad.addColorStop(1, "#bae6fd");
+                context.beginPath(); context.arc(0, 0, 22, 0, 7);
                 context.fillStyle = domeGrad; context.fill();
 
-                // 3. Handle (Ring)
+                // Handle
                 context.shadowBlur = 0;
-                context.beginPath();
-                context.arc(0, 32, 20, 0, 7);
-                context.strokeStyle = "rgba(255,255,255,0.9)";
-                context.lineWidth = 6;
-                context.stroke();
+                context.beginPath(); context.arc(0, 32, 20, 0, 7);
+                context.strokeStyle = "rgba(255,255,255,0.9)"; context.lineWidth = 6; context.stroke();
 
                 context.restore();
             }
@@ -293,16 +297,10 @@
                 g.addColorStop(0.1, "rgba(255, 255, 255, 0.8)");
                 g.addColorStop(0.5, "rgba(168, 85, 247, 0.4)");
                 g.addColorStop(1, "transparent");
-                
-                context.strokeStyle = g; 
-                context.lineWidth = 5; 
-                context.lineCap = "round";
+                context.strokeStyle = g; context.lineWidth = 5; context.lineCap = "round";
                 context.beginPath(); context.moveTo(c.x, c.y); context.lineTo(c.x + 220, c.y - 170); context.stroke();
-                
-                // Head core
                 context.fillStyle = "white";
                 context.beginPath(); context.arc(c.x, c.y, 3, 0, 7); context.fill();
-                
                 c.x += c.vx; c.y += c.vy; c.life -= 0.008;
                 if(c.life <= 0) { comets.splice(i, 1); i--; }
             }
