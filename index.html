@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Pro V22</title>
+    <title>Birth Pulse - TV Cinematic V23</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -15,7 +15,7 @@
         }
         body:active { cursor: grabbing; }
 
-        /* 1. REALISTIC STARS */
+        /* 1. REALISTIC BLINKING STARS */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             z-index: 1; pointer-events: none;
@@ -70,7 +70,7 @@
 </head>
 <body>
 
-    <div id="loading">SYNCHRONIZING CINEMATIC BIOME...</div>
+    <div id="loading">OPTIMIZING HIGH-CONTRAST ENGINE...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -98,15 +98,13 @@
         // TV-SAFE ES5 CODE
         var BIRTH_RATE = 4.34;
         var AUTO_ROTATION_SPEED = 0.42; 
-        var PACIFIER_PATH = "M12,2A5,5,0,0,0,7,7v2c-2,0-3,1-3,3s1,3,3,3v2a5,5,0,0,0,10,0V15c2,0,3-1,3-3s-1-3-3-3V7A5,5,0,0,0,12,2Zm3,7H9V7a3,3,0,0,1,6,0Zm0,9a3,3,0,0,1-6,0V17h6Z";
         
-        // DYNAMIC CONTRAST THEMES (Land, Ocean Core, Ocean Edge)
+        // High Contrast Themes (Land Color, Ocean Core, Ocean Edge)
         var globeThemes = [
-            { land: "#6366f1", oCore: "#1e1b4b", oEdge: "#020617" }, // Indigo/Navy
-            { land: "#0d9488", oCore: "#042f2e", oEdge: "#020617" }, // Teal/Forest
-            { land: "#be185d", oCore: "#4c0519", oEdge: "#020617" }, // Rose/Wine
-            { land: "#b45309", oCore: "#451a03", oEdge: "#020617" }, // Amber/Coffee
-            { land: "#06b6d4", oCore: "#164e63", oEdge: "#020617" }  // Cyan/Teal
+            { land: "#5eead4", oCore: "#0f172a", oEdge: "#020617" }, // Mint Teal / Navy
+            { land: "#fef08a", oCore: "#422006", oEdge: "#020617" }, // Amber / Dark Brown
+            { land: "#a5f3fc", oCore: "#164e63", oEdge: "#020617" }, // Cyan / Deep Teal
+            { land: "#fbcfe8", oCore: "#4c0519", oEdge: "#020617" }  // Rose / Deep Wine
         ];
         var currentThemeIdx = 0;
         
@@ -130,7 +128,7 @@
         }
         setSizes();
 
-        // 1.2x GLOBE SIZE
+        // GLOBE SIZE (Increased to 1.2x)
         var projection = d3.geoOrthographic()
             .scale(h / 2.8)
             .translate([w * 0.72, h * 0.5]) 
@@ -148,8 +146,8 @@
         });
         window.addEventListener('mouseup', function() { isDragging = false; });
 
-        // --- INIT ---
-        for(var i=0; i<100; i++) {
+        // --- INIT ELEMENTS ---
+        for(var i=0; i<80; i++) {
             stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 });
         }
         for(var i=0; i<5; i++) {
@@ -160,7 +158,6 @@
             });
         }
 
-        // Change Biome Color every 3 minutes
         setInterval(function() { currentThemeIdx = (currentThemeIdx + 1) % globeThemes.length; }, 180000);
 
         function init() {
@@ -190,22 +187,22 @@
             // 2. Realistic Comets
             drawComets();
 
-            // 3. Triple-Sized Radium Pacifiers
-            drawTripleRadiumFloaters();
+            // 3. New Realistic Side-Profile Pacifiers
+            drawNewPacifiers();
 
             var center = projection.translate();
             var radius = projection.scale();
             var theme = globeThemes[currentThemeIdx];
 
-            // 4. Dynamic Atmosphere
+            // 4. Atmosphere
             var glow = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 50);
             glow.addColorStop(0, "rgba(168, 85, 247, 0.2)"); glow.addColorStop(1, "transparent");
             context.beginPath(); context.arc(center[0], center[1], radius + 50, 0, 7);
             context.fillStyle = glow; context.fill();
 
-            // 5. Dynamic Contrasting Ocean
+            // 5. Ocean (High Contrast)
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
-            oceanGrad.addColorStop(0, theme.land); // Land color reflected in glint
+            oceanGrad.addColorStop(0, theme.land);
             oceanGrad.addColorStop(0.2, theme.oCore);
             oceanGrad.addColorStop(1, theme.oEdge);
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
@@ -230,7 +227,7 @@
             requestAnimationFrame(renderLoop);
         }
 
-        function drawTripleRadiumFloaters() {
+        function drawNewPacifiers() {
             var time = Date.now() * 0.001;
             for (var i = 0; i < floaters.length; i++) {
                 var f = floaters[i];
@@ -242,17 +239,33 @@
                 context.save();
                 context.translate(f.x, f.y + bob);
                 context.rotate(f.rot * Math.PI / 180);
-                
-                // TRIPLE SIZE (Scale 1.5)
-                context.scale(1.5, 1.5); 
+                context.scale(1.5, 1.5); // Triple Size from original
 
-                // RADIUM OMNI-GLOW
-                context.shadowBlur = 35; 
-                context.shadowColor = "#ccff00"; 
+                // RADIUM GLOW
+                context.shadowBlur = 30;
+                context.shadowColor = "#ccff00";
 
-                var p = new Path2D(PACIFIER_PATH);
+                // 1. Draw Shield (Side View)
+                context.beginPath();
+                context.moveTo(-5, -15);
+                context.bezierCurveTo(5, -20, 5, 20, -5, 15);
+                context.closePath();
+                context.fillStyle = "rgba(165, 243, 252, 0.8)"; // Teal Tint
+                context.fill();
+
+                // 2. Draw Nipple (Side View - White)
+                context.beginPath();
+                context.ellipse(10, 0, 15, 8, 0, 0, 7);
                 context.fillStyle = "#ffffff";
-                context.fill(p);
+                context.fill();
+
+                // 3. Draw Handle (Ring)
+                context.beginPath();
+                context.arc(-10, 0, 8, 0, 7);
+                context.strokeStyle = "white";
+                context.lineWidth = 2;
+                context.stroke();
+
                 context.restore();
             }
         }
