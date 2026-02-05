@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Pro V25</title>
+    <title>Birth Pulse - TV Pro Cinematic V26</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -34,7 +34,8 @@
 
         .main-heading {
             position: absolute; top: 7vh; left: 6vw;
-            font-size: 2.6vw; color: #a855f7; 
+            /* Increased to 1.2x size (approx 3.1vw) */
+            font-size: 3.1vw; color: #a855f7; 
             font-weight: 800; z-index: 110;
             text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
         }
@@ -42,6 +43,14 @@
         .stats-panel { 
             position: absolute; top: 50%; left: 6vw; 
             transform: translateY(-50%); width: 38vw; z-index: 100;
+        }
+
+        .label { 
+            font-size: 1.3vw; color: #38bdf8; 
+            text-transform: uppercase; 
+            font-weight: 900; /* Extra Bold */
+            letter-spacing: 3px;
+            margin-bottom: 5px;
         }
 
         .count {
@@ -81,7 +90,7 @@
         <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
 
         <div class="stats-panel">
-            <span class="text-[1.3vw] font-black tracking-[0.5em] text-yellow-500/80 uppercase mb-2 block">Global Birth Count Today</span>
+            <span class="label">Global Birth Count Today</span>
             <div id="birthCount" class="count">0</div>
             
             <div class="mt-8">
@@ -95,14 +104,13 @@
     </div>
 
     <script>
-        // TV-SAFE ES5 SCRIPT (Legacy Compatible for Philips)
+        // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
         var AUTO_ROTATION_SPEED = 0.42; 
         
-        // High Contrast Cinematic Themes (Avoids Black Oceans)
         var globeThemes = [
-            { land: "#4ade80", oCore: "#1e40af", oEdge: "#0f172a" }, // Emerald / Deep Blue
-            { land: "#fb7185", oCore: "#4c0519", oEdge: "#1a0105" }, // Rose / Deep Red
+            { land: "#4ade80", oCore: "#1e40af", oEdge: "#0f172a" }, // Emerald / Blue
+            { land: "#fb7185", oCore: "#4c0519", oEdge: "#1a0105" }, // Rose / Red
             { land: "#22d3ee", oCore: "#0e7490", oEdge: "#083344" }, // Cyan / Teal
             { land: "#facc15", oCore: "#713f12", oEdge: "#422006" }  // Amber / Brown
         ];
@@ -145,7 +153,7 @@
         window.addEventListener('mouseup', function() { isDragging = false; });
 
         for(var i=0; i<100; i++) {
-            stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2.5, t: 2 + Math.random()*3 });
+            stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 });
         }
         for(var i=0; i<6; i++) {
             floaters.push({
@@ -181,11 +189,11 @@
             }
             context.globalAlpha = 1;
 
-            // 2. High-Visibility Comets
-            drawBoldComets();
+            // 2. Realistic Comets
+            drawRealisticComets();
 
-            // 3. New Detailed Pacifiers (50% Size)
-            drawDetailedPacifiers();
+            // 3. New Butterfly Pacifiers (Blue/Coral Style)
+            drawThemePacifiers();
 
             var center = projection.translate();
             var radius = projection.scale();
@@ -193,15 +201,13 @@
 
             // 4. Atmosphere
             var glow = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 50);
-            glow.addColorStop(0, "rgba(168, 85, 247, 0.2)"); glow.addColorStop(1, "transparent");
+            glow.addColorStop(0, "rgba(168, 85, 247, 0.25)"); glow.addColorStop(1, "transparent");
             context.beginPath(); context.arc(center[0], center[1], radius + 50, 0, 7);
             context.fillStyle = glow; context.fill();
 
-            // 5. Ocean (Contrast Blue)
+            // 5. Ocean
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
-            oceanGrad.addColorStop(0, "#3b82f6"); 
-            oceanGrad.addColorStop(0.3, theme.oCore);
-            oceanGrad.addColorStop(1, theme.oEdge);
+            oceanGrad.addColorStop(0, "#3b82f6"); oceanGrad.addColorStop(0.3, theme.oCore); oceanGrad.addColorStop(1, theme.oEdge);
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; context.fill();
 
@@ -217,71 +223,83 @@
                         context.fillStyle = theme.land; 
                     }
                     context.fill();
-                    context.strokeStyle = "rgba(255, 255, 255, 0.5)";
-                    context.lineWidth = 0.8; context.stroke();
+                    context.strokeStyle = "rgba(255, 255, 255, 0.4)";
+                    context.lineWidth = 0.7; context.stroke();
                 });
             }
             requestAnimationFrame(renderLoop);
         }
 
-        function drawDetailedPacifiers() {
-            var now = Date.now() * 0.001;
+        function drawThemePacifiers() {
+            var time = Date.now() * 0.001;
             for (var i = 0; i < floaters.length; i++) {
                 var f = floaters[i];
                 f.x += f.vx; f.y += f.vy; f.rot += f.rSpeed;
                 if(f.x < -100) f.x = w + 100; if(f.x > w + 100) f.x = -100;
                 if(f.y < -100) f.y = h + 100; if(f.y > h + 100) f.y = -100;
 
-                var bob = Math.sin(now + f.phase) * 10;
+                var bob = Math.sin(time + f.phase) * 10;
                 context.save();
                 context.translate(f.x, f.y + bob);
                 context.rotate(f.rot * Math.PI / 180);
-                context.scale(0.4, 0.4); // 50% relative size
+                context.scale(0.4, 0.4); 
 
-                // RADIUM GREEN GLOW
-                context.shadowBlur = 40;
+                // RADIUM GLOW
+                context.shadowBlur = 35;
                 context.shadowColor = "#ccff00";
 
-                // Shield (Butterfly shape)
+                // 1. Butterfly Outer Frame (Coral/Orange)
                 context.beginPath();
-                context.moveTo(-30, -15);
-                context.bezierCurveTo(-50, -40, -50, 40, -30, 15);
-                context.bezierCurveTo(-10, 10, 10, 10, 30, 15);
-                context.bezierCurveTo(50, 40, 50, -40, 30, -15);
-                context.bezierCurveTo(10, -10, -10, -10, -30, -15);
-                context.fillStyle = "#d4d4d8"; context.fill();
+                context.moveTo(-35, -20);
+                context.bezierCurveTo(-55, -45, -55, 45, -35, 20);
+                context.bezierCurveTo(-15, 15, 15, 15, 35, 20);
+                context.bezierCurveTo(55, 45, 55, -45, 35, -20);
+                context.bezierCurveTo(15, -15, -15, -15, -35, -20);
+                context.fillStyle = "#ff7f50"; context.fill();
 
-                // Center Button (Zebra Wave)
+                // 2. Inner Shield (Light Blue)
                 context.beginPath();
-                context.arc(0, 0, 18, 0, 7);
-                context.fillStyle = "#f4f4f5"; context.fill();
-                context.strokeStyle = "#71717a"; context.lineWidth = 2;
-                for(var j=-12; j<=12; j+=6) {
-                    context.beginPath(); context.moveTo(-12, j); context.lineTo(12, j+4); context.stroke();
-                }
+                context.moveTo(-25, -15);
+                context.bezierCurveTo(-40, -30, -40, 30, -25, 15);
+                context.lineTo(25, 15);
+                context.bezierCurveTo(40, 30, 40, -30, 25, -15);
+                context.closePath();
+                context.fillStyle = "#bae6fd"; context.fill();
 
-                // Handle
+                // 3. Center Dome (Light Blue)
+                context.beginPath();
+                context.arc(0, 0, 20, 0, 7);
+                context.fillStyle = "#e0f2fe"; context.fill();
+
+                // 4. Handle (Light Blue Ring)
                 context.shadowBlur = 0;
-                context.beginPath(); context.arc(0, 25, 15, 0, 7);
-                context.strokeStyle = "rgba(255,255,255,0.8)"; context.lineWidth = 4; context.stroke();
+                context.beginPath(); context.arc(0, 28, 18, 0, 7);
+                context.strokeStyle = "#bae6fd"; context.lineWidth = 5; context.stroke();
 
                 context.restore();
             }
         }
 
-        function drawBoldComets() {
-            if (Math.random() > 0.995) comets.push({ x: Math.random()*w, y: -100, vx: -18, vy: 12, life: 1 });
+        function drawRealisticComets() {
+            if (Math.random() > 0.996) comets.push({ x: Math.random()*w, y: -100, vx: -18, vy: 14, life: 1 });
             for (var i = 0; i < comets.length; i++) {
                 var c = comets[i];
-                var g = context.createLinearGradient(c.x, c.y, c.x + 150, c.y - 120);
+                var g = context.createLinearGradient(c.x, c.y, c.x + 180, c.y - 140);
                 g.addColorStop(0, "white");
-                g.addColorStop(0.2, "rgba(168, 85, 247, 0.8)");
+                g.addColorStop(0.1, "rgba(255, 255, 255, 0.9)");
+                g.addColorStop(0.4, "rgba(168, 85, 247, 0.6)");
                 g.addColorStop(1, "transparent");
+                
                 context.strokeStyle = g; 
-                context.lineWidth = 10; // Extra thick for TV visibility
+                context.lineWidth = 6; 
                 context.lineCap = "round";
-                context.beginPath(); context.moveTo(c.x, c.y); context.lineTo(c.x + 180, c.y - 140); context.stroke();
-                c.x += c.vx; c.y += c.vy; c.life -= 0.009;
+                context.beginPath(); context.moveTo(c.x, c.y); context.lineTo(c.x + 200, c.y - 160); context.stroke();
+                
+                // Head nucleus
+                context.fillStyle = "white";
+                context.beginPath(); context.arc(c.x, c.y, 2.5, 0, 7); context.fill();
+                
+                c.x += c.vx; c.y += c.vy; c.life -= 0.008;
                 if(c.life <= 0) { comets.splice(i, 1); i--; }
             }
         }
