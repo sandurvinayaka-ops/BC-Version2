@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Pro V21</title>
+    <title>Birth Pulse - Cinematic TV Pro V22</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -45,7 +45,6 @@
         }
 
         .count {
-            /* Reduced to 90% (from 9.5vw to 8.5vw) */
             font-size: 8.5vw; font-weight: 900; color: #fbbf24;
             line-height: 1.1; margin: 0; 
             text-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
@@ -71,7 +70,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING CINEMATIC ENVIRONMENT...</div>
+    <div id="loading">SYNCHRONIZING CINEMATIC BIOME...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -96,12 +95,19 @@
     </div>
 
     <script>
-        // TV-SAFE ES5 SCRIPT
+        // TV-SAFE ES5 CODE
         var BIRTH_RATE = 4.34;
         var AUTO_ROTATION_SPEED = 0.42; 
         var PACIFIER_PATH = "M12,2A5,5,0,0,0,7,7v2c-2,0-3,1-3,3s1,3,3,3v2a5,5,0,0,0,10,0V15c2,0,3-1,3-3s-1-3-3-3V7A5,5,0,0,0,12,2Zm3,7H9V7a3,3,0,0,1,6,0Zm0,9a3,3,0,0,1-6,0V17h6Z";
         
-        var globeThemes = ["#6366f1", "#0d9488", "#be185d", "#15803d", "#b45309", "#7e22ce"];
+        // DYNAMIC CONTRAST THEMES (Land, Ocean Core, Ocean Edge)
+        var globeThemes = [
+            { land: "#6366f1", oCore: "#1e1b4b", oEdge: "#020617" }, // Indigo/Navy
+            { land: "#0d9488", oCore: "#042f2e", oEdge: "#020617" }, // Teal/Forest
+            { land: "#be185d", oCore: "#4c0519", oEdge: "#020617" }, // Rose/Wine
+            { land: "#b45309", oCore: "#451a03", oEdge: "#020617" }, // Amber/Coffee
+            { land: "#06b6d4", oCore: "#164e63", oEdge: "#020617" }  // Cyan/Teal
+        ];
         var currentThemeIdx = 0;
         
         var worldData = null;
@@ -114,7 +120,6 @@
         var context = canvas.getContext("2d");
         var w, h;
 
-        // Interaction
         var isDragging = false;
         var lastMouseX, lastMouseY;
         var rotX = 0, rotY = -15;
@@ -125,7 +130,7 @@
         }
         setSizes();
 
-        // 1.2x LARGER GLOBE (Changed from h/3.4 to h/2.8)
+        // 1.2x GLOBE SIZE
         var projection = d3.geoOrthographic()
             .scale(h / 2.8)
             .translate([w * 0.72, h * 0.5]) 
@@ -143,18 +148,19 @@
         });
         window.addEventListener('mouseup', function() { isDragging = false; });
 
-        // --- INIT ELEMENTS ---
+        // --- INIT ---
         for(var i=0; i<100; i++) {
             stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 });
         }
-        for(var i=0; i<6; i++) {
+        for(var i=0; i<5; i++) {
             floaters.push({
                 x: Math.random()*w, y: Math.random()*h,
-                vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
-                rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1.5, phase: Math.random()*5
+                vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.25,
+                rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1.2, phase: Math.random()*5
             });
         }
 
+        // Change Biome Color every 3 minutes
         setInterval(function() { currentThemeIdx = (currentThemeIdx + 1) % globeThemes.length; }, 180000);
 
         function init() {
@@ -184,22 +190,24 @@
             // 2. Realistic Comets
             drawComets();
 
-            // 3. Floating Radium Pacifiers (with Omni-Glow)
-            drawFloaters();
+            // 3. Triple-Sized Radium Pacifiers
+            drawTripleRadiumFloaters();
 
             var center = projection.translate();
             var radius = projection.scale();
+            var theme = globeThemes[currentThemeIdx];
 
-            // 4. Atmosphere Outer Glow
+            // 4. Dynamic Atmosphere
             var glow = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 50);
-            glow.addColorStop(0, "rgba(168, 85, 247, 0.3)");
-            glow.addColorStop(1, "transparent");
+            glow.addColorStop(0, "rgba(168, 85, 247, 0.2)"); glow.addColorStop(1, "transparent");
             context.beginPath(); context.arc(center[0], center[1], radius + 50, 0, 7);
             context.fillStyle = glow; context.fill();
 
-            // 5. Realistic Ocean Gradient
+            // 5. Dynamic Contrasting Ocean
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
-            oceanGrad.addColorStop(0, "#60a5fa"); oceanGrad.addColorStop(0.4, "#3b82f6"); oceanGrad.addColorStop(1, "#1e3a8a");
+            oceanGrad.addColorStop(0, theme.land); // Land color reflected in glint
+            oceanGrad.addColorStop(0.2, theme.oCore);
+            oceanGrad.addColorStop(1, theme.oEdge);
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; context.fill();
 
@@ -212,41 +220,39 @@
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
                         context.fillStyle = "#fbbf24"; 
                     } else {
-                        context.fillStyle = globeThemes[currentThemeIdx]; 
+                        context.fillStyle = theme.land; 
                     }
                     context.fill();
-                    context.strokeStyle = "rgba(255, 255, 255, 0.4)";
+                    context.strokeStyle = "rgba(255, 255, 255, 0.3)";
                     context.lineWidth = 0.5; context.stroke();
                 });
             }
             requestAnimationFrame(renderLoop);
         }
 
-        function drawFloaters() {
+        function drawTripleRadiumFloaters() {
             var time = Date.now() * 0.001;
             for (var i = 0; i < floaters.length; i++) {
                 var f = floaters[i];
                 f.x += f.vx; f.y += f.vy; f.rot += f.rSpeed;
-                if(f.x < -50) f.x = w + 50; if(f.x > w + 50) f.x = -50;
-                if(f.y < -50) f.y = h + 50; if(f.y > h + 50) f.y = -50;
+                if(f.x < -100) f.x = w + 100; if(f.x > w + 100) f.x = -100;
+                if(f.y < -100) f.y = h + 100; if(f.y > h + 100) f.y = -100;
 
                 var bob = Math.sin(time + f.phase) * 10;
                 context.save();
                 context.translate(f.x, f.y + bob);
                 context.rotate(f.rot * Math.PI / 180);
-                context.scale(0.5, 0.5); 
+                
+                // TRIPLE SIZE (Scale 1.5)
+                context.scale(1.5, 1.5); 
 
                 // RADIUM OMNI-GLOW
-                context.shadowBlur = 40; 
-                context.shadowColor = "#ccff00"; // Radium Green
+                context.shadowBlur = 35; 
+                context.shadowColor = "#ccff00"; 
 
-                // Drawing twice to intensify center glow
                 var p = new Path2D(PACIFIER_PATH);
                 context.fillStyle = "#ffffff";
                 context.fill(p);
-                context.shadowBlur = 10;
-                context.fill(p);
-
                 context.restore();
             }
         }
