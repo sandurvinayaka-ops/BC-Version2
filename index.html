@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Pro V28</title>
+    <title>Birth Pulse - Cinematic TV Pro V30</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -15,7 +15,7 @@
         }
         body:active { cursor: grabbing; }
 
-        /* 1. REALISTIC BLINKING STARS */
+        /* 1. BACKGROUND STARS */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             z-index: 1; pointer-events: none;
@@ -24,7 +24,7 @@
             position: absolute; background: white; border-radius: 50%;
             animation: blink var(--t) infinite ease-in-out;
         }
-        @keyframes blink { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.8; } }
+        @keyframes blink { 0%, 100% { opacity: 0.1; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.1); } }
 
         /* 2. UI LAYOUT */
         .ui-overlay {
@@ -41,29 +41,40 @@
 
         .stats-panel { 
             position: absolute; top: 50%; left: 6vw; 
-            transform: translateY(-50%); width: 38vw; z-index: 100;
+            transform: translateY(-50%); width: 32vw; z-index: 100;
         }
 
         .label { 
             font-size: 1.3vw; color: #38bdf8; 
-            text-transform: uppercase; 
-            font-weight: 900; 
-            letter-spacing: 3px;
-            margin-bottom: 5px;
+            text-transform: uppercase; font-weight: 900; 
+            letter-spacing: 3px; margin-bottom: 5px;
         }
 
         .count {
-            font-size: 8.5vw; font-weight: 900; color: #fbbf24;
+            font-size: 8.2vw; font-weight: 900; color: #fbbf24;
             line-height: 1.1; margin: 0; 
             text-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
         }
         
-        .progress-box { width: 90%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 20px; margin-top: 25px; overflow: visible; position: relative;}
-        .bar-fill { height: 100%; width: 0%; background: #fbbf24; border-radius: 20px; box-shadow: 0 0 15px #fbbf24; }
+        .progress-container { width: 100%; margin-top: 40px; }
+        .top-labels { display: flex; justify-content: space-between; width: 100%; margin-bottom: 8px; }
+        .limit-text { color: #38bdf8; font-size: 1.1vw; font-weight: bold; opacity: 0.8; letter-spacing: 1px; }
         
-        .meta-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; }
-        .meta-text { color: #fbbf24; font-size: 1.5vw; font-weight: bold; letter-spacing: 2px; }
+        .bar-wrapper { 
+            width: 100%; height: 16px; background: rgba(255,255,255,0.05); 
+            border-radius: 10px; border: 1px solid rgba(255,255,255,0.15);
+            overflow: hidden; position: relative;
+        }
+        .bar-fill { 
+            height: 100%; width: 0%; 
+            background: linear-gradient(90deg, #f59e0b, #fbbf24); 
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); 
+        }
 
+        .bottom-clock { width: 100%; text-align: center; margin-top: 15px; }
+        #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; letter-spacing: 3px; }
+
+        /* 3. GLOBE POSITIONING */
         .globe-container {
             position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 5;
         }
@@ -78,7 +89,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING ATMOSPHERIC ENGINE...</div>
+    <div id="loading">SYNCING RADIUM SYSTEMS...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -92,26 +103,32 @@
             <span class="label">Global Birth Count Today</span>
             <div id="birthCount" class="count">0</div>
             
-            <div class="mt-8">
-                <div class="progress-box"><div id="bar" class="bar-fill"></div></div>
-                <div class="meta-row">
-                    <span id="clock" class="meta-text">00:00:00</span>
-                    <span id="percent" class="meta-text">00%</span>
+            <div class="progress-container">
+                <div class="top-labels">
+                    <span class="limit-text">00:00</span>
+                    <span class="limit-text">24:00</span>
+                </div>
+                <div class="bar-wrapper">
+                    <div id="bar" class="bar-fill"></div>
+                </div>
+                <div class="bottom-clock">
+                    <span id="clock">00:00:00</span>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // TV-SAFE ES5 SCRIPT
+        // TV-SAFE ES5 CODE
         var BIRTH_RATE = 4.34;
         var AUTO_ROTATION_SPEED = 0.42; 
+        var PACIFIER_PATH = "M12,2A5,5,0,0,0,7,7v2c-2,0-3,1-3,3s1,3,3,3v2a5,5,0,0,0,10,0V15c2,0,3-1,3-3s-1-3-3-3V7A5,5,0,0,0,12,2Zm3,7H9V7a3,3,0,0,1,6,0Zm0,9a3,3,0,0,1-6,0V17h6Z";
         
         var globeThemes = [
             { land: "#4ade80", oCore: "#1e3a8a", oEdge: "#0f172a" }, // Emerald
             { land: "#fb7185", oCore: "#4c0519", oEdge: "#1a0105" }, // Rose
             { land: "#22d3ee", oCore: "#0e7490", oEdge: "#083344" }, // Cyan
-            { land: "#facc15", oCore: "#713f12", oEdge: "#422006" }  // Amber (Yellow)
+            { land: "#facc15", oCore: "#713f12", oEdge: "#422006" }  // Amber
         ];
         var currentThemeIdx = 0;
         
@@ -191,28 +208,20 @@
             // 2. Realistic Comets
             drawRealisticComets();
 
-            // 3. 3D Pacifiers
-            draw3DPacifiers();
+            // 3. Realistic 3D Pacifiers with Pulsing Radium Centre
+            drawPulsingPacifiers();
 
             var center = projection.translate();
             var radius = projection.scale();
             var theme = globeThemes[currentThemeIdx];
 
-            // 4. IMPROVED ATMOSPHERE GLOW
-            // Layer A: Deep Soft Glow
-            var glowSoft = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 60);
-            glowSoft.addColorStop(0, "rgba(168, 85, 247, 0.2)");
-            glowSoft.addColorStop(1, "transparent");
-            context.beginPath(); context.arc(center[0], center[1], radius + 60, 0, 7);
-            context.fillStyle = glowSoft; context.fill();
-
-            // Layer B: Bright Rim
-            var glowRim = context.createRadialGradient(center[0], center[1], radius - 10, center[0], center[1], radius + 5);
-            glowRim.addColorStop(0, "transparent");
-            glowRim.addColorStop(0.8, "rgba(34, 211, 238, 0.3)");
-            glowRim.addColorStop(1, "transparent");
-            context.beginPath(); context.arc(center[0], center[1], radius + 5, 0, 7);
-            context.fillStyle = glowRim; context.fill();
+            // 4. IMPROVED ATMOSPHERE
+            var atmosphere = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 55);
+            atmosphere.addColorStop(0, "rgba(56, 189, 248, 0.25)");
+            atmosphere.addColorStop(0.5, "rgba(168, 85, 247, 0.1)");
+            atmosphere.addColorStop(1, "transparent");
+            context.beginPath(); context.arc(center[0], center[1], radius + 55, 0, 7);
+            context.fillStyle = atmosphere; context.fill();
 
             // 5. Ocean
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
@@ -222,20 +231,19 @@
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; context.fill();
 
-            // 6. Countries (Smart Flash Logic)
+            // 6. Countries
             if (worldData) {
                 var now = Date.now();
-                var currentLandColor = theme.land;
-                // If land is yellow/gold, use WHITE flash, otherwise use GOLD flash
-                var activeFlashColor = (currentLandColor === "#facc15") ? "#ffffff" : "#fbbf24";
+                var currentLand = theme.land;
+                var flashColor = (currentLand === "#facc15") ? "#ffffff" : "#fbbf24";
 
                 worldData.features.forEach(function(feature) {
                     var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3;
                     context.beginPath(); path(feature);
                     if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = activeFlashColor; 
+                        context.fillStyle = flashColor; 
                     } else {
-                        context.fillStyle = currentLandColor; 
+                        context.fillStyle = currentLand; 
                     }
                     context.fill();
                     context.strokeStyle = "rgba(255, 255, 255, 0.4)";
@@ -245,24 +253,24 @@
             requestAnimationFrame(renderLoop);
         }
 
-        function draw3DPacifiers() {
-            var timeNow = Date.now() * 0.001;
+        function drawPulsingPacifiers() {
+            var time = Date.now() * 0.001;
+            // Pulsing factor (0.2 to 1.0)
+            var pulse = 0.6 + Math.sin(time * 3) * 0.4;
+
             for (var i = 0; i < floaters.length; i++) {
                 var f = floaters[i];
                 f.x += f.vx; f.y += f.vy; f.rot += f.rSpeed;
                 if(f.x < -100) f.x = w + 100; if(f.x > w + 100) f.x = -100;
                 if(f.y < -100) f.y = h + 100; if(f.y > h + 100) f.y = -100;
 
-                var bob = Math.sin(timeNow + f.phase) * 8;
+                var bob = Math.sin(time + f.phase) * 8;
                 context.save();
                 context.translate(f.x, f.y + bob);
                 context.rotate(f.rot * Math.PI / 180);
                 context.scale(0.35, 0.35); 
 
-                // RADIUM GREEN GLOW
-                context.shadowBlur = 40; context.shadowColor = "#ccff00";
-
-                // Shield Wings
+                // 1. Butterfly Shield Wings
                 var wingGrad = context.createLinearGradient(-50, -40, 50, 40);
                 wingGrad.addColorStop(0, "#bae6fd"); wingGrad.addColorStop(1, "#fb923c");
                 context.beginPath();
@@ -273,13 +281,18 @@
                 context.bezierCurveTo(15, -15, -15, -15, -35, -20);
                 context.fillStyle = wingGrad; context.fill();
 
-                // Dome Button
+                // 2. RADIUM CENTRE PULSE
+                context.shadowBlur = 40 * pulse; 
+                context.shadowColor = "#ccff00";
+
                 var domeGrad = context.createRadialGradient(-5, -5, 2, 0, 0, 22);
-                domeGrad.addColorStop(0, "#ffffff"); domeGrad.addColorStop(1, "#bae6fd");
+                domeGrad.addColorStop(0, "#ffffff"); 
+                domeGrad.addColorStop(1, "rgba(204, 255, 0, " + pulse + ")"); // Radium pulse
+                
                 context.beginPath(); context.arc(0, 0, 22, 0, 7);
                 context.fillStyle = domeGrad; context.fill();
 
-                // Handle
+                // 3. Handle
                 context.shadowBlur = 0;
                 context.beginPath(); context.arc(0, 32, 20, 0, 7);
                 context.strokeStyle = "rgba(255,255,255,0.9)"; context.lineWidth = 6; context.stroke();
@@ -314,8 +327,8 @@
                 var total = Math.floor(elapsed * BIRTH_RATE);
                 document.getElementById('birthCount').innerText = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
-                var pVal = Math.floor((elapsed / 86400) * 100);
-                document.getElementById('percent').innerText = (pVal < 10 ? "0" + pVal : pVal) + "%";
+                
+                var pVal = (elapsed / 86400 * 100).toFixed(1);
                 document.getElementById('bar').style.width = pVal + "%";
 
                 if (worldData) {
