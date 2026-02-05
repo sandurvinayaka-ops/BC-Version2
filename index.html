@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic Interactive V19</title>
+    <title>Birth Pulse - Cinematic TV Pro V20</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
             overflow: hidden; background-color: #000000;
-            font-family: 'Segoe UI', Arial, sans-serif; color: white;
+            font-family: Arial, Helvetica, sans-serif; color: white;
             cursor: grab;
         }
         body:active { cursor: grabbing; }
 
-        /* 1. REALISTIC BLINKING STARS */
+        /* 1. REALISTIC STARS */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             z-index: 1; pointer-events: none;
@@ -50,13 +50,12 @@
             text-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
         }
         
-        .progress-box { width: 100%; height: 14px; background: rgba(255,255,255,0.1); border-radius: 20px; margin-top: 25px; position: relative;}
+        .progress-box { width: 90%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 20px; margin-top: 25px; position: relative;}
         .bar-fill { height: 100%; width: 0%; background: #fbbf24; border-radius: 20px; box-shadow: 0 0 15px #fbbf24; }
         
         .meta-row { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; }
         .meta-text { color: #fbbf24; font-size: 1.5vw; font-weight: bold; letter-spacing: 2px; }
 
-        /* 3. GLOBE CONTAINER */
         .globe-container {
             position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 5;
         }
@@ -71,7 +70,7 @@
 </head>
 <body>
 
-    <div id="loading">CALIBRATING REALISTIC INTERACTIVE WORLD...</div>
+    <div id="loading">ACTIVATING CINEMATIC ENVIRONMENT...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -96,9 +95,9 @@
     </div>
 
     <script>
-        // TV-SAFE ES5 CODE
+        // TV-SAFE ES5 SCRIPT (LEGACY COMPATIBLE)
         var BIRTH_RATE = 4.34;
-        var AUTO_ROTATION_SPEED = 0.45;
+        var AUTO_ROTATION_SPEED = 0.42; 
         
         var globeThemes = ["#6366f1", "#0d9488", "#be185d", "#15803d", "#b45309", "#7e22ce"];
         var currentThemeIdx = 0;
@@ -113,10 +112,10 @@
         var context = canvas.getContext("2d");
         var w, h;
 
-        // Interaction Variables
+        // Interaction
         var isDragging = false;
         var lastMouseX, lastMouseY;
-        var rotationX = 0, rotationY = -15;
+        var rotX = 0, rotY = -15;
 
         function setSizes() {
             w = window.innerWidth; h = window.innerHeight;
@@ -131,39 +130,25 @@
 
         var path = d3.geoPath(projection, context);
 
-        // --- INTERACTION LISTENERS ---
+        // --- INTERACTION ---
         canvas.addEventListener('mousedown', function(e) { isDragging = true; lastMouseX = e.clientX; lastMouseY = e.clientY; });
         window.addEventListener('mousemove', function(e) {
             if (!isDragging) return;
-            var dx = e.clientX - lastMouseX;
-            var dy = e.clientY - lastMouseY;
-            rotationX += dx * 0.3;
-            rotationY -= dy * 0.3;
+            rotX += (e.clientX - lastMouseX) * 0.3;
+            rotY -= (e.clientY - lastMouseY) * 0.3;
             lastMouseX = e.clientX; lastMouseY = e.clientY;
         });
         window.addEventListener('mouseup', function() { isDragging = false; });
-
-        // Touch support for TV remotes/tablets
-        canvas.addEventListener('touchstart', function(e) { isDragging = true; lastMouseX = e.touches[0].clientX; lastMouseY = e.touches[0].clientY; });
-        window.addEventListener('touchmove', function(e) {
-            if (!isDragging) return;
-            var dx = e.touches[0].clientX - lastMouseX;
-            var dy = e.touches[0].clientY - lastMouseY;
-            rotationX += dx * 0.3;
-            rotationY -= dy * 0.3;
-            lastMouseX = e.touches[0].clientX; lastMouseY = e.touches[0].clientY;
-        });
-        window.addEventListener('touchend', function() { isDragging = false; });
 
         // --- INIT ELEMENTS ---
         for(var i=0; i<100; i++) {
             stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 });
         }
-        for(var i=0; i<5; i++) {
+        for(var i=0; i<6; i++) {
             floaters.push({
                 x: Math.random()*w, y: Math.random()*h,
                 vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
-                rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1, phase: Math.random()*5
+                rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1.5, phase: Math.random()*5
             });
         }
 
@@ -179,33 +164,34 @@
         }
 
         function renderLoop() {
-            if (!isDragging) { rotationX += AUTO_ROTATION_SPEED; }
-            projection.rotate([rotationX, rotationY]);
+            if (!isDragging) rotX += AUTO_ROTATION_SPEED;
+            projection.rotate([rotX, rotY]);
             context.clearRect(0, 0, w, h);
 
             // 1. Stars
             context.fillStyle = "white";
-            var timeNow = Date.now() * 0.001;
+            var time = Date.now() * 0.001;
             for(var i=0; i<stars.length; i++) {
                 var s = stars[i];
-                context.globalAlpha = 0.2 + Math.abs(Math.sin(timeNow / s.t)) * 0.6;
+                context.globalAlpha = 0.2 + Math.abs(Math.sin(time / s.t)) * 0.6;
                 context.beginPath(); context.arc(s.x, s.y, s.sz, 0, 7); context.fill();
             }
             context.globalAlpha = 1;
 
             // 2. Realistic Comets
-            updateComets();
+            drawComets();
 
-            // 3. Floating Radium Side-Profile Pacifiers
-            drawRealisticFloaters();
+            // 3. Floating Radium Pacifiers (50% Size)
+            drawFloaters();
 
             var center = projection.translate();
             var radius = projection.scale();
 
             // 4. Atmosphere Glow
-            var glow = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 30);
-            glow.addColorStop(0, "rgba(168, 85, 247, 0.2)"); glow.addColorStop(1, "transparent");
-            context.beginPath(); context.arc(center[0], center[1], radius + 30, 0, 7);
+            var glow = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 35);
+            glow.addColorStop(0, "rgba(168, 85, 247, 0.3)");
+            glow.addColorStop(1, "transparent");
+            context.beginPath(); context.arc(center[0], center[1], radius + 35, 0, 7);
             context.fillStyle = glow; context.fill();
 
             // 5. Ocean
@@ -233,51 +219,40 @@
             requestAnimationFrame(renderLoop);
         }
 
-        function drawRealisticFloaters() {
-            var timeNow = Date.now() * 0.001;
+        function drawFloaters() {
+            var time = Date.now() * 0.001;
             for (var i = 0; i < floaters.length; i++) {
                 var f = floaters[i];
                 f.x += f.vx; f.y += f.vy; f.rot += f.rSpeed;
-                if(f.x < -100) f.x = w + 100; if(f.x > w + 100) f.x = -100;
-                if(f.y < -100) f.y = h + 100; if(f.y > h + 100) f.y = -100;
+                if(f.x < -50) f.x = w + 50; if(f.x > w + 50) f.x = -50;
+                if(f.y < -50) f.y = h + 50; if(f.y > h + 50) f.y = -50;
 
-                var bob = Math.sin(timeNow + f.phase) * 10;
+                var bob = Math.sin(time + f.phase) * 10;
                 context.save();
                 context.translate(f.x, f.y + bob);
                 context.rotate(f.rot * Math.PI / 180);
+                context.scale(0.5, 0.5); // 50% SIZE REDUCTION
 
-                // DRAW REALISTIC SIDE-PROFILE PACIFIER
-                // 1. Radium Glow
-                context.shadowBlur = 30; context.shadowColor = "#ccff00";
-                
-                // 2. Silicone Nipple (Translucent)
-                context.beginPath();
-                context.ellipse(25, 0, 15, 10, 0, 0, Math.PI * 2);
-                context.fillStyle = "rgba(200, 230, 255, 0.5)";
-                context.fill();
-                
-                // 3. Solid Base (Shield)
+                // RADIUM GREEN GLOW
+                context.shadowBlur = 25; context.shadowColor = "#ccff00";
+
+                // Nipple
+                context.beginPath(); context.ellipse(25, 0, 15, 10, 0, 0, 7);
+                context.fillStyle = "rgba(204, 255, 0, 0.6)"; context.fill();
+                // Base
                 context.shadowBlur = 0;
-                context.beginPath();
-                context.moveTo(10, -20);
-                context.bezierCurveTo(-5, -25, -5, 25, 10, 20);
-                context.lineTo(10, -20);
-                context.fillStyle = "#ffffff";
-                context.fill();
-
-                // 4. The Handle
-                context.beginPath();
-                context.arc(-10, 0, 12, 0, Math.PI * 2);
-                context.strokeStyle = "rgba(255,255,255,0.8)";
-                context.lineWidth = 3;
-                context.stroke();
+                context.beginPath(); context.moveTo(10, -20); context.bezierCurveTo(-5, -25, -5, 25, 10, 20); context.closePath();
+                context.fillStyle = "#ffffff"; context.fill();
+                // Handle
+                context.beginPath(); context.arc(-10, 0, 12, 0, 7);
+                context.strokeStyle = "white"; context.lineWidth = 3; context.stroke();
 
                 context.restore();
             }
         }
 
-        function updateComets() {
-            if (Math.random() > 0.997) comets.push({ x: Math.random()*w, y: -50, vx: -16, vy: 12, life: 1 });
+        function drawComets() {
+            if (Math.random() > 0.997) comets.push({ x: Math.random()*w, y: -100, vx: -16, vy: 12, life: 1 });
             for (var i = 0; i < comets.length; i++) {
                 var c = comets[i];
                 var g = context.createLinearGradient(c.x, c.y, c.x + 100, c.y - 80);
