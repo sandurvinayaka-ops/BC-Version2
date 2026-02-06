@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic Universal V34</title>
+    <title>Birth Pulse - Cinematic TV Universal V36</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -35,21 +35,16 @@
             padding: 4vh 0;
         }
 
-        .header-box { pointer-events: auto; }
         .main-heading {
             font-size: 2.8vw; color: #a855f7; 
             font-weight: 800; text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
-            white-space: nowrap;
+            white-space: nowrap; pointer-events: auto;
         }
 
         .stats-box { pointer-events: auto; }
-        .label { 
-            font-size: 1.2vw; color: #38bdf8; 
-            text-transform: uppercase; font-weight: 900; 
-            letter-spacing: 3px;
-        }
+        .label { font-size: 1.2vw; color: #38bdf8; text-transform: uppercase; font-weight: 900; letter-spacing: 3px; }
         .count {
-            font-size: 8.2vw; font-weight: 900; color: #fbbf24;
+            font-size: 8.5vw; font-weight: 900; color: #fbbf24;
             line-height: 1.1; margin: 2px 0; 
             text-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
         }
@@ -57,20 +52,13 @@
         .progress-container { width: 35vw; margin-top: 15px; }
         .top-labels { display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px; }
         .limit-text { color: #38bdf8; font-size: 1.1vw; font-weight: bold; opacity: 0.8; }
-        
-        .bar-wrapper { 
-            width: 100%; height: 14px; background: rgba(255,255,255,0.05); 
-            border-radius: 20px; border: 1px solid rgba(255,255,255,0.15);
-            overflow: hidden;
-        }
+        .bar-wrapper { width: 100%; height: 14px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); overflow: hidden; }
         .bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f59e0b, #fbbf24); box-shadow: 0 0 15px rgba(251, 191, 36, 0.5); }
         .bottom-clock { width: 100%; text-align: center; margin-top: 12px; }
         #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; letter-spacing: 3px; }
 
         /* 3. GLOBE CONTAINER */
-        .globe-container {
-            position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 5;
-        }
+        .globe-container { position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 5; }
         #main-canvas { width: 100%; height: 100%; }
 
         #loading {
@@ -82,7 +70,7 @@
 </head>
 <body>
 
-    <div id="loading">SYNCHRONIZING TOUCH & WORLD...</div>
+    <div id="loading">RESTORING CINEMATIC PACIFIERS...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -114,16 +102,15 @@
     </div>
 
     <script>
-        // TV-SAFE ES5 SCRIPT
+        // TV-SAFE ES5
         var BIRTH_RATE = 4.34;
-        var AUTO_ROTATION_SPEED = 0.42; 
+        var AUTO_ROTATION_SPEED = 0.45; 
         
-        // CONTRAST THEMES: If land is color A, flash is color B
         var globeThemes = [
-            { land: "#4ade80", flash: "#f472b6", ocean: "#0a192f" }, // Emerald / Pink Flash
-            { land: "#fb7185", flash: "#4ade80", ocean: "#1e0108" }, // Rose / Green Flash
-            { land: "#22d3ee", flash: "#fbbf24", ocean: "#042f2e" }, // Cyan / Gold Flash
-            { land: "#facc15", flash: "#a855f7", ocean: "#1e0a01" }  // Amber / Purple Flash
+            { land: "#4ade80", flash: "#f472b6", ocean: "#0a192f" },
+            { land: "#fb7185", flash: "#22d3ee", ocean: "#1e0108" },
+            { land: "#22d3ee", flash: "#fbbf24", ocean: "#042f2e" },
+            { land: "#facc15", flash: "#a855f7", ocean: "#1e0a01" }
         ];
         var currentThemeIdx = 0;
         
@@ -135,40 +122,21 @@
         function setSizes() { w = window.innerWidth; h = window.innerHeight; canvas.width = w; canvas.height = h; }
         setSizes();
 
-        var projection = d3.geoOrthographic().scale(h / 2.8).translate([w * 0.75, h * 0.5]).clipAngle(90);
+        var projection = d3.geoOrthographic().scale(h / 3.0).translate([w * 0.74, h * 0.5]).clipAngle(90);
         var path = d3.geoPath(projection, context);
 
-        // --- UNIVERSAL INPUT HANDLERS (Fixes Touch on VU TV) ---
-        function handleStart(x, y) { isDragging = true; lastX = x; lastY = y; }
-        function handleMove(x, y) {
-            if (!isDragging) return;
-            rotX += (x - lastX) * 0.3;
-            rotY -= (y - lastY) * 0.3;
-            lastX = x; lastY = y;
-        }
-        function handleEnd() { isDragging = false; }
+        // --- INTERACTION ---
+        function startDrag(x, y) { isDragging = true; lastX = x; lastY = y; }
+        function moveDrag(x, y) { if (isDragging) { rotX += (x - lastX)*0.3; rotY -= (y - lastY)*0.3; lastX = x; lastY = y; } }
+        canvas.addEventListener('mousedown', function(e) { startDrag(e.clientX, e.clientY); });
+        window.addEventListener('mousemove', function(e) { moveDrag(e.clientX, e.clientY); });
+        window.addEventListener('mouseup', function() { isDragging = false; });
+        canvas.addEventListener('touchstart', function(e) { e.preventDefault(); if(e.touches.length > 0) startDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+        window.addEventListener('touchmove', function(e) { e.preventDefault(); if(e.touches.length > 0) moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+        window.addEventListener('touchend', function() { isDragging = false; });
 
-        canvas.addEventListener('mousedown', function(e) { handleStart(e.clientX, e.clientY); });
-        window.addEventListener('mousemove', function(e) { handleMove(e.clientX, e.clientY); });
-        window.addEventListener('mouseup', handleEnd);
-
-        canvas.addEventListener('touchstart', function(e) { 
-            if(e.touches.length > 0) {
-                e.preventDefault(); // Prevents TV browser scrolling
-                handleStart(e.touches[0].clientX, e.touches[0].clientY); 
-            }
-        }, {passive: false});
-        window.addEventListener('touchmove', function(e) { 
-            if(e.touches.length > 0) {
-                e.preventDefault();
-                handleMove(e.touches[0].clientX, e.touches[0].clientY); 
-            }
-        }, {passive: false});
-        window.addEventListener('touchend', handleEnd);
-
-        // --- INIT ELEMENTS ---
-        for(var i=0; i<100; i++) { stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 }); }
-        for(var i=0; i<6; i++) { floaters.push({ x: Math.random()*w, y: Math.random()*h, vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15, rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1, phase: Math.random()*5 }); }
+        for(var i=0; i<80; i++) stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 });
+        for(var i=0; i<5; i++) floaters.push({ x: Math.random()*w, y: Math.random()*h, vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15, rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1.2, phase: Math.random()*5 });
 
         setInterval(function() { currentThemeIdx = (currentThemeIdx + 1) % globeThemes.length; }, 180000);
 
@@ -198,17 +166,17 @@
             // 2. Comets
             updateComets();
 
-            // 3. Pulsing Radium Pacifiers
-            drawPulsingPacifiers();
+            // 3. Floating Radium Butterfly Pacifiers
+            drawButterflyPacifiers();
 
             var center = projection.translate();
             var radius = projection.scale();
             var theme = globeThemes[currentThemeIdx];
 
-            // 4. Atmosphere Glow
-            var glow = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 60);
-            glow.addColorStop(0, "rgba(56, 189, 248, 0.2)"); glow.addColorStop(1, "transparent");
-            context.beginPath(); context.arc(center[0], center[1], radius + 60, 0, 7);
+            // 4. Atmosphere
+            var glow = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 50);
+            glow.addColorStop(0, "rgba(168, 85, 247, 0.2)"); glow.addColorStop(1, "transparent");
+            context.beginPath(); context.arc(center[0], center[1], radius + 50, 0, 7);
             context.fillStyle = glow; context.fill();
 
             // 5. Ocean
@@ -217,52 +185,72 @@
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; context.fill();
 
-            // 6. Countries (CONSTRAST FLASH LOGIC)
+            // 6. World (Batch Optimized)
             if (worldData) {
                 var now = Date.now();
+                context.beginPath();
+                path(worldData);
+                context.fillStyle = theme.land;
+                context.fill();
+                context.strokeStyle = "rgba(255, 255, 255, 0.4)";
+                context.lineWidth = 0.6;
+                context.stroke();
+
                 worldData.features.forEach(function(feature) {
                     var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3;
-                    context.beginPath(); path(feature);
-                    if (flashingISO[iso] && (now - flashingISO[iso] < 2000)) {
-                        context.fillStyle = theme.flash; // THE CONTRAST COLOR
-                    } else {
-                        context.fillStyle = theme.land; 
+                    if (flashingISO[iso] && (now - flashingISO[iso] < 1500)) {
+                        context.beginPath();
+                        path(feature);
+                        context.fillStyle = theme.flash;
+                        context.fill();
+                        context.strokeStyle = "white";
+                        context.lineWidth = 1;
+                        context.stroke();
                     }
-                    context.fill();
-                    context.strokeStyle = "rgba(255, 255, 255, 0.5)"; context.lineWidth = 0.8; context.stroke();
                 });
             }
             requestAnimationFrame(renderLoop);
         }
 
-        function drawPulsingPacifiers() {
+        function drawButterflyPacifiers() {
             var time = Date.now() * 0.001;
-            var pulse = 0.6 + Math.sin(time * 3) * 0.4;
+            var pulse = 0.6 + Math.sin(time * 3) * 0.4; // Radium pulse logic
             for (var i = 0; i < floaters.length; i++) {
                 var f = floaters[i];
                 f.x += f.vx; f.y += f.vy; f.rot += f.rSpeed;
                 if(f.x < -100) f.x = w + 100; if(f.x > w + 100) f.x = -100;
                 if(f.y < -100) f.y = h + 100; if(f.y > h + 100) f.y = -100;
                 var bob = Math.sin(time + f.phase) * 8;
+                
                 context.save();
                 context.translate(f.x, f.y + bob);
                 context.rotate(f.rot * Math.PI / 180);
                 context.scale(0.35, 0.35); 
 
-                // Butterfly Design
+                // 1. Butterfly Wings Gradient (Restored)
+                var wingGrad = context.createLinearGradient(-50, -40, 50, 40);
+                wingGrad.addColorStop(0, "#bae6fd"); wingGrad.addColorStop(1, "#ff7f50");
+                
                 context.beginPath();
                 context.moveTo(-35, -20); context.bezierCurveTo(-60, -50, -60, 50, -35, 20);
                 context.bezierCurveTo(-15, 15, 15, 15, 35, 20); context.bezierCurveTo(60, 50, 60, -50, 35, -20);
-                context.fillStyle = "#bae6fd"; context.fill();
+                context.bezierCurveTo(15, -15, -15, -15, -35, -20);
+                context.fillStyle = wingGrad; context.fill();
 
-                // RADIUM PULSE CENTRE
+                // 2. RADIUM CENTRE PULSE (Restored)
                 context.shadowBlur = 40 * pulse; context.shadowColor = "#ccff00";
+                var domeGrad = context.createRadialGradient(-5, -5, 2, 0, 0, 22);
+                domeGrad.addColorStop(0, "#ffffff"); 
+                domeGrad.addColorStop(1, "rgba(204, 255, 0, " + pulse + ")");
+                
                 context.beginPath(); context.arc(0, 0, 22, 0, 7);
-                context.fillStyle = "rgba(204, 255, 0, " + pulse + ")"; context.fill();
+                context.fillStyle = domeGrad; context.fill();
 
-                // Handle
-                context.shadowBlur = 0; context.beginPath(); context.arc(0, 32, 20, 0, 7);
-                context.strokeStyle = "white"; context.lineWidth = 6; context.stroke();
+                // 3. Handle Ring (Restored)
+                context.shadowBlur = 0;
+                context.beginPath(); context.arc(0, 32, 20, 0, 7);
+                context.strokeStyle = "rgba(255,255,255,0.9)"; context.lineWidth = 6; context.stroke();
+
                 context.restore();
             }
         }
@@ -290,11 +278,9 @@
                 document.getElementById('birthCount').innerText = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
                 document.getElementById('bar').style.width = (elapsed / 86400 * 100) + "%";
-                document.getElementById('percent').innerText = (Math.floor((elapsed / 86400) * 100)) + "%";
-
                 if (worldData) {
                     var idx = Math.floor(Math.random() * worldData.features.length);
-                    var iso = worldData.features[idx].properties.ISO_A3 || worldData.features[idx].properties.ADM0_A3;
+                    var iso = worldData.features[idx].properties.ISO_A3 || worldData.features[idx].properties.ADM0_A3 || worldData.features[idx].id;
                     flashingISO[iso] = Date.now();
                 }
             }, 1000 / BIRTH_RATE);
