@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Universal V31</title>
+    <title>Birth Pulse - Cinematic TV Universal V32</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -26,19 +26,20 @@
         }
         @keyframes blink { 0%, 100% { opacity: 0.1; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.1); } }
 
-        /* 2. FLEXIBLE UI LAYOUT (Fixes overlapping on small aspect ratios) */
+        /* 2. FLEXIBLE UI LAYOUT (Fixed for single line and aspect ratios) */
         .ui-root {
-            position: absolute; left: 6vw; top: 0; bottom: 0;
-            width: 35vw; z-index: 100; pointer-events: none;
+            position: absolute; left: 5vw; top: 0; bottom: 0;
+            width: 45vw; z-index: 100; pointer-events: none;
             display: flex; flex-direction: column;
-            justify-content: space-around; /* Dynamically spaces elements apart */
-            padding: 5vh 0;
+            justify-content: space-around; /* Spaced out items */
+            padding: 4vh 0;
         }
 
         .header-box { pointer-events: auto; }
         .main-heading {
-            font-size: 2.8vw; color: #a855f7; 
+            font-size: 2.3vw; color: #a855f7; 
             font-weight: 800; text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+            white-space: nowrap; /* FORCES SINGLE LINE */
         }
 
         .stats-box { pointer-events: auto; }
@@ -49,12 +50,12 @@
         }
         .count {
             font-size: 8.2vw; font-weight: 900; color: #fbbf24;
-            line-height: 1.1; margin: 5px 0; 
+            line-height: 1.1; margin: 2px 0; 
             text-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
         }
 
         /* PROGRESS BAR ASSEMBLY */
-        .progress-container { width: 100%; margin-top: 20px; }
+        .progress-container { width: 35vw; margin-top: 15px; }
         .top-labels { display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px; }
         .limit-text { color: #38bdf8; font-size: 1.1vw; font-weight: bold; opacity: 0.8; }
         
@@ -64,7 +65,7 @@
             overflow: hidden;
         }
         .bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #f59e0b, #fbbf24); box-shadow: 0 0 15px rgba(251, 191, 36, 0.5); }
-        .bottom-clock { width: 100%; text-align: center; margin-top: 15px; }
+        .bottom-clock { width: 100%; text-align: center; margin-top: 12px; }
         #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; letter-spacing: 3px; }
 
         /* 3. GLOBE CONTAINER */
@@ -82,14 +83,13 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING FOR UNIVERSAL ASPECT RATIO...</div>
+    <div id="loading">OPTIMIZING FOR TV SCREENS...</div>
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
         <canvas id="main-canvas"></canvas>
     </div>
 
-    <!-- UI ROOT (FLEX CONTAINER) -->
     <div class="ui-root">
         <div class="header-box">
             <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
@@ -120,12 +120,11 @@
         var AUTO_ROTATION_SPEED = 0.42; 
         var PACIFIER_PATH = "M12,2A5,5,0,0,0,7,7v2c-2,0-3,1-3,3s1,3,3,3v2a5,5,0,0,0,10,0V15c2,0,3-1,3-3s-1-3-3-3V7A5,5,0,0,0,12,2Zm3,7H9V7a3,3,0,0,1,6,0Zm0,9a3,3,0,0,1-6,0V17h6Z";
         
-        // DYNAMIC CONTRAST THEMES (LAND, OCEAN CORE)
         var globeThemes = [
-            { land: "#4ade80", ocean: "#0a192f" }, // Emerald/Navy
-            { land: "#fb7185", ocean: "#1e0108" }, // Rose/Deep Red
-            { land: "#22d3ee", ocean: "#042f2e" }, // Cyan/Dark Teal
-            { land: "#facc15", ocean: "#1e0a01" }  // Amber/Dark Brown
+            { land: "#4ade80", ocean: "#0a192f" },
+            { land: "#fb7185", ocean: "#1e0108" },
+            { land: "#22d3ee", ocean: "#042f2e" },
+            { land: "#facc15", ocean: "#1e0a01" }
         ];
         var currentThemeIdx = 0;
         
@@ -137,6 +136,7 @@
         function setSizes() { w = window.innerWidth; h = window.innerHeight; canvas.width = w; canvas.height = h; }
         setSizes();
 
+        // GLOBE POSITION (Fixed 75% Right)
         var projection = d3.geoOrthographic().scale(h / 2.8).translate([w * 0.75, h * 0.5]).clipAngle(90);
         var path = d3.geoPath(projection, context);
 
@@ -148,7 +148,7 @@
         });
         window.addEventListener('mouseup', function() { isDragging = false; });
 
-        for(var i=0; i<100; i++) { stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 }); }
+        for(var i=0; i<80; i++) { stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 }); }
         for(var i=0; i<5; i++) { floaters.push({ x: Math.random()*w, y: Math.random()*h, vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15, rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1, phase: Math.random()*5 }); }
 
         setInterval(function() { currentThemeIdx = (currentThemeIdx + 1) % globeThemes.length; }, 180000);
@@ -179,7 +179,7 @@
             // 2. Comets
             updateComets();
 
-            // 3. Pulsing Radium Pacifiers
+            // 3. Pulsing Radium Pacifiers (Centre Glow)
             drawPulsingPacifiers();
 
             var center = projection.translate();
@@ -192,7 +192,7 @@
             context.beginPath(); context.arc(center[0], center[1], radius + 55, 0, 7);
             context.fillStyle = glow; context.fill();
 
-            // 5. High-Contrast Ocean
+            // 5. Ocean
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#3b82f6"); oceanGrad.addColorStop(0.5, theme.ocean); oceanGrad.addColorStop(1, "#020617");
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
@@ -229,7 +229,7 @@
                 context.rotate(f.rot * Math.PI / 180);
                 context.scale(0.35, 0.35); 
 
-                // Shield Wings
+                // Wings Gradient
                 var wingGrad = context.createLinearGradient(-50, -40, 50, 40);
                 wingGrad.addColorStop(0, "#bae6fd"); wingGrad.addColorStop(1, "#fb923c");
                 context.beginPath();
@@ -260,6 +260,7 @@
                 g.addColorStop(0, "white"); g.addColorStop(0.5, "rgba(168, 85, 247, 0.4)"); g.addColorStop(1, "transparent");
                 context.strokeStyle = g; context.lineWidth = 5; context.lineCap = "round";
                 context.beginPath(); context.moveTo(c.x, c.y); context.lineTo(c.x + 220, c.y - 170); context.stroke();
+                context.fillStyle = "white"; context.beginPath(); context.arc(c.x, c.y, 3, 0, 7); context.fill();
                 c.x += c.vx; c.y += c.vy; c.life -= 0.008;
                 if(c.life <= 0) { comets.splice(i, 1); i--; }
             }
