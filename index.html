@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Pro V44</title>
+    <title>Birth Pulse - Cinematic TV Pro V48</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -15,20 +15,18 @@
         }
         body:active { cursor: grabbing; }
 
-        /* 1. ACCURATE PHILIPS LOGO WITH BACKSIDE COLOR GLOW */
-        .logo-box {
-            position: absolute; top: 4vh; left: 4vw;
-            z-index: 500; pointer-events: none;
+        /* 1. RANDOM COLOR PHILIPS TEXT */
+        .philips-header {
+            display: flex;
+            margin-bottom: 0.5vh;
+            pointer-events: none;
         }
-        .philips-svg {
-            width: 7vw; height: auto;
-            /* Animation applied to the filter for backside glow */
-            animation: backside-glow 6s infinite linear;
-        }
-        @keyframes backside-glow {
-            0%, 100% { filter: drop-shadow(0 0 15px #a855f7); } /* Purple */
-            33% { filter: drop-shadow(0 0 25px #3b82f6); }    /* Blue */
-            66% { filter: drop-shadow(0 0 20px #22d3ee); }    /* Cyan */
+        .philips-header span {
+            font-size: 2.2vw;
+            font-weight: 900;
+            letter-spacing: 0.4vw;
+            transition: color 0.8s ease, text-shadow 0.8s ease;
+            text-transform: uppercase;
         }
 
         /* 2. BACKGROUND STARS */
@@ -44,7 +42,7 @@
 
         /* 3. FLEXIBLE UI LAYOUT - LEFT ALIGNED */
         .ui-root {
-            position: absolute; left: 5vw; top: 18vh; bottom: 5vh;
+            position: absolute; left: 5vw; top: 8vh; bottom: 5vh;
             width: 45vw; z-index: 100; pointer-events: none;
             display: flex; flex-direction: column;
             justify-content: space-around;
@@ -66,6 +64,7 @@
             text-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
         }
 
+        /* PROGRESS BAR ASSEMBLY */
         .progress-container { width: 35vw; margin-top: 15px; }
         .top-labels { display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px; }
         .limit-text { color: #38bdf8; font-size: 1.1vw; font-weight: bold; opacity: 0.8; }
@@ -87,27 +86,8 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING CINEMATIC BIOME...</div>
+    <div id="loading">OPTIMIZING CINEMATIC ENVIRONMENT...</div>
     
-    <!-- AUTHENTIC PHILIPS SHIELD SVG -->
-    <div class="logo-box">
-        <svg class="philips-svg" viewBox="0 0 540 640" xmlns="http://www.w3.org/2000/svg">
-            <!-- Blue Shield -->
-            <path d="M40,20 h460 v320 c0,180 -230,280 -230,280 s-230,-100 -230,-280 Z" fill="#0059B3"/>
-            <!-- Accurate "PHILIPS" Lettering -->
-            <text x="50%" y="150" text-anchor="middle" fill="white" font-family="Arial Black, sans-serif" font-weight="900" font-size="95" letter-spacing="-2">PHILIPS</text>
-            <!-- White Interior Circle -->
-            <circle cx="270" cy="405" r="175" fill="white"/>
-            <!-- Double Waves -->
-            <path d="M125,435 q72,-60 145,0 t145,0" stroke="#0059B3" stroke-width="26" fill="none"/>
-            <path d="M125,495 q72,-60 145,0 t145,0" stroke="#0059B3" stroke-width="26" fill="none"/>
-            <!-- Correct 3 Stars positions from image -->
-            <path d="M210,265 l10,35 l35,10 l-35,10 l-10,35 l-10,-35 l-35,-10 l35,-10 Z" fill="#0059B3"/> <!-- Top Left -->
-            <path d="M330,240 l8,22 l22,8 l-22,8 l-8,22 l-8,-22 l-22,-8 l22,-8 Z" fill="#0059B3"/> <!-- Center Left -->
-            <path d="M365,510 l10,30 l30,10 l-30,10 l-10,30 l-10,-30 l-30,-10 l30,-10 Z" fill="#0059B3"/> <!-- Bottom Right -->
-        </svg>
-    </div>
-
     <div class="stars-container" id="starfield"></div>
 
     <div class="globe-container">
@@ -116,6 +96,10 @@
 
     <div class="ui-root">
         <div class="header-box">
+            <!-- PHILIPS TEXT ABOVE MOTHER -->
+            <div id="philips-text" class="philips-header">
+                <span>P</span><span>H</span><span>I</span><span>L</span><span>I</span><span>P</span><span>S</span>
+            </div>
             <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
         </div>
 
@@ -141,7 +125,7 @@
     <script>
         // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
-        var AUTO_ROTATION_SPEED = 0.45; 
+        var AUTO_ROTATION_SPEED = 0.52; 
         
         var globeThemes = [
             { land: "#4ade80", flash: "#f472b6", ocean: "#0a192f" },
@@ -159,10 +143,10 @@
         function setSizes() { w = window.innerWidth; h = window.innerHeight; canvas.width = w; canvas.height = h; }
         setSizes();
 
-        var projection = d3.geoOrthographic().scale(h / 2.8).translate([w * 0.74, h * 0.5]).clipAngle(90);
+        var projection = d3.geoOrthographic().scale(h / 3.0).translate([w * 0.74, h * 0.5]).clipAngle(90);
         var path = d3.geoPath(projection, context);
 
-        // --- UNIVERSAL INTERACTION ---
+        // Interaction
         function startDrag(x, y) { isDragging = true; lastX = x; lastY = y; }
         function moveDrag(x, y) { if (isDragging) { rotX += (x - lastX)*0.3; rotY -= (y - lastY)*0.3; lastX = x; lastY = y; } }
         canvas.addEventListener('mousedown', function(e) { startDrag(e.clientX, e.clientY); });
@@ -172,15 +156,30 @@
         window.addEventListener('touchmove', function(e) { e.preventDefault(); if(e.touches.length > 0) moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
         window.addEventListener('touchend', function() { isDragging = false; });
 
+        // PHILIPS Random Color Logic
+        function updatePhilipsColors() {
+            var spans = document.querySelectorAll('#philips-text span');
+            for(var i=0; i<spans.length; i++) {
+                var r = Math.floor(Math.random() * 155) + 100;
+                var g = Math.floor(Math.random() * 155) + 100;
+                var b = Math.floor(Math.random() * 155) + 100;
+                var col = 'rgb(' + r + ',' + g + ',' + b + ')';
+                spans[i].style.color = col;
+                spans[i].style.textShadow = '0 0 15px ' + col;
+            }
+        }
+
         for(var i=0; i<80; i++) stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 });
         for(var i=0; i<5; i++) floaters.push({ x: Math.random()*w, y: Math.random()*h, vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15, rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1, phase: Math.random()*5 });
 
         setInterval(function() { currentThemeIdx = (currentThemeIdx + 1) % globeThemes.length; }, 180000);
+        setInterval(updatePhilipsColors, 1000);
 
         function init() {
             d3.json("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson").then(function(data) {
                 worldData = data;
                 document.getElementById('loading').style.display = 'none';
+                updatePhilipsColors();
                 renderLoop();
                 startSimulation();
             });
@@ -207,7 +206,7 @@
             var radius = projection.scale();
             var theme = globeThemes[currentThemeIdx];
 
-            // Ocean (Contrast Blue)
+            // Globe
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#3b82f6"); oceanGrad.addColorStop(0.5, theme.ocean); oceanGrad.addColorStop(1, "#020617");
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
@@ -220,7 +219,7 @@
                 context.strokeStyle = "rgba(255, 255, 255, 0.4)"; context.lineWidth = 0.6; context.stroke();
 
                 worldData.features.forEach(function(feature) {
-                    var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3;
+                    var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3 || feature.id;
                     if (flashingISO[iso] && (now - flashingISO[iso] < 1500)) {
                         context.beginPath(); path(feature);
                         context.fillStyle = theme.flash;
