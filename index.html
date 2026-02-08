@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Solar System Pro V51</title>
+    <title>Birth Pulse - Solar System Cinematic V52</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -27,7 +27,7 @@
             text-transform: uppercase;
         }
         .main-heading {
-            font-size: 3.1vw; /* 1.2x bigger */
+            font-size: 3.1vw; 
             color: #a855f7; 
             font-weight: 800; text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
             white-space: nowrap;
@@ -67,7 +67,7 @@
 </head>
 <body>
 
-    <div id="loading">CONSTRUCTING SOLAR SYSTEM...</div>
+    <div id="loading">CONSTRUCTING CINEMATIC SOLAR SYSTEM...</div>
     
     <div class="header-box">
         <div id="philips-text" class="philips-text">
@@ -111,7 +111,6 @@
         ];
         var currentThemeIdx = 0;
 
-        // PLANET DATA (Mercury to Neptune)
         var planets = [
             { name: "Mercury", dist: 120, size: 3, speed: 0.015, color: "#9ca3af", angle: Math.random()*7 },
             { name: "Venus",   dist: 160, size: 5, speed: 0.011, color: "#fb923c", angle: Math.random()*7 },
@@ -122,7 +121,7 @@
             { name: "Neptune", dist: 520, size: 6, speed: 0.001, color: "#6366f1", angle: Math.random()*7 }
         ];
         
-        var worldData = null, flashingISO = {}, floaters = [], stars = [], comets = [];
+        var worldData = null, flashingISO = {}, stars = [], comets = [];
         var canvas = document.getElementById("main-canvas");
         var context = canvas.getContext("2d");
         var w, h, isDragging = false, lastX, lastY, rotX = 0, rotY = -15;
@@ -133,7 +132,7 @@
         var projection = d3.geoOrthographic().scale(h / 2.8).translate([w * 0.74, h * 0.5]).clipAngle(90);
         var path = d3.geoPath(projection, context);
 
-        // --- INTERACTION ---
+        // Interaction
         function handleStart(x, y) { isDragging = true; lastX = x; lastY = y; }
         function handleMove(x, y) { if (isDragging) { rotX += (x - lastX)*0.3; rotY -= (y - lastY)*0.3; lastX = x; lastY = y; } }
         canvas.addEventListener('mousedown', function(e) { handleStart(e.clientX, e.clientY); });
@@ -152,10 +151,7 @@
             }
         }
 
-        // Init Background Stars
-        for(var i=0; i<60; i++) stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2 });
-        // Init Pacifiers
-        for(var i=0; i<5; i++) floaters.push({ x: Math.random()*w, y: Math.random()*h, vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15, rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1, phase: Math.random()*5 });
+        for(var i=0; i<80; i++) stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2 });
 
         setInterval(function() { currentThemeIdx = (currentThemeIdx + 1) % globeThemes.length; }, 180000);
         setInterval(updatePhilipsColors, 1200);
@@ -174,28 +170,30 @@
             projection.rotate([rotX, rotY]);
             context.clearRect(0, 0, w, h);
 
-            // 1. Draw Solar System Background
             drawSolarSystem();
 
-            // 2. Stars
+            // Stars
             context.fillStyle = "rgba(255,255,255,0.4)";
             for(var i=0; i<stars.length; i++) {
                 context.beginPath(); context.arc(stars[i].x, stars[i].y, stars[i].sz, 0, 7); context.fill();
             }
 
-            // 3. Comets & Pacifiers
             updateComets();
-            drawButterflyPacifiers();
 
             var center = projection.translate(), radius = projection.scale(), theme = globeThemes[currentThemeIdx];
 
-            // 4. Globe Ocean (3D Shaded)
+            // Globe Atmosphere
+            var atmosphere = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 55);
+            atmosphere.addColorStop(0, "rgba(56, 189, 248, 0.2)"); atmosphere.addColorStop(1, "transparent");
+            context.beginPath(); context.arc(center[0], center[1], radius + 55, 0, 7);
+            context.fillStyle = atmosphere; context.fill();
+
+            // Ocean
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#3b82f6"); oceanGrad.addColorStop(0.5, theme.ocean); oceanGrad.addColorStop(1, "#020617");
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; context.fill();
 
-            // 5. World Draw
             if (worldData) {
                 var now = Date.now();
                 context.beginPath(); path(worldData);
@@ -206,7 +204,8 @@
                     var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3 || feature.id;
                     if (flashingISO[iso] && (now - flashingISO[iso] < 1500)) {
                         context.beginPath(); path(feature);
-                        context.fillStyle = theme.flash; context.fill();
+                        context.fillStyle = theme.flash;
+                        context.fill();
                         context.strokeStyle = "white"; context.lineWidth = 1; context.stroke();
                     }
                 });
@@ -215,66 +214,24 @@
         }
 
         function drawSolarSystem() {
-            var sunX = w * 0.25, sunY = h * 0.5; // Positioning Sun on the left
-            var time = Date.now() * 0.0002;
-
-            // Draw Sun
+            var sunX = w * 0.25, sunY = h * 0.5;
             var sunGrad = context.createRadialGradient(sunX, sunY, 10, sunX, sunY, 60);
-            sunGrad.addColorStop(0, "#fffbeb");
-            sunGrad.addColorStop(0.4, "#fbbf24");
-            sunGrad.addColorStop(1, "transparent");
-            
+            sunGrad.addColorStop(0, "#fffbeb"); sunGrad.addColorStop(0.4, "#fbbf24"); sunGrad.addColorStop(1, "transparent");
             context.save();
             context.shadowBlur = 50; context.shadowColor = "#f59e0b";
             context.beginPath(); context.arc(sunX, sunY, 50, 0, 7);
             context.fillStyle = sunGrad; context.fill();
             context.restore();
 
-            // Draw Planets
             for(var i=0; i<planets.length; i++) {
                 var p = planets[i];
                 p.angle += p.speed * 0.5;
                 var px = sunX + Math.cos(p.angle) * p.dist;
-                var py = sunY + Math.sin(p.angle) * p.dist * 0.6; // Elliptical orbit
-
-                // Orbit path
+                var py = sunY + Math.sin(p.angle) * p.dist * 0.6;
                 context.beginPath(); context.ellipse(sunX, sunY, p.dist, p.dist * 0.6, 0, 0, 7);
-                context.strokeStyle = "rgba(255,255,255,0.05)"; context.lineWidth = 1; context.stroke();
-
-                // Planet
+                context.strokeStyle = "rgba(255,255,255,0.05)"; context.stroke();
                 context.beginPath(); context.arc(px, py, p.size, 0, 7);
                 context.fillStyle = p.color; context.fill();
-                context.shadowBlur = 10; context.shadowColor = p.color; context.fill();
-                context.shadowBlur = 0;
-            }
-        }
-
-        function drawButterflyPacifiers() {
-            var time = Date.now() * 0.001, pulse = 0.6 + Math.sin(time * 3) * 0.4;
-            for (var i = 0; i < floaters.length; i++) {
-                var f = floaters[i];
-                f.x += f.vx; f.y += f.vy; f.rot += f.rSpeed;
-                if(f.x < -100) f.x = w + 100; if(f.x > w + 100) f.x = -100;
-                if(f.y < -100) f.y = h + 100; if(f.y > h + 100) f.y = -100;
-                var bob = Math.sin(time + f.phase) * 8;
-                context.save();
-                context.translate(f.x, f.y + bob); context.rotate(f.rot * Math.PI / 180);
-                context.scale(0.35, 0.35); 
-                var wingGrad = context.createLinearGradient(-50, -40, 50, 40);
-                wingGrad.addColorStop(0, "#bae6fd"); wingGrad.addColorStop(1, "#ff7f50");
-                context.beginPath();
-                context.moveTo(-35, -20); context.bezierCurveTo(-60, -50, -60, 50, -35, 20);
-                context.bezierCurveTo(-15, 15, 15, 15, 35, 20); context.bezierCurveTo(60, 50, 60, -50, 35, -20);
-                context.bezierCurveTo(15, -15, -15, -15, -35, -20);
-                context.fillStyle = wingGrad; context.fill();
-                context.shadowBlur = 40 * pulse; context.shadowColor = "#ccff00";
-                var domeGrad = context.createRadialGradient(-5, -5, 2, 0, 0, 22);
-                domeGrad.addColorStop(0, "#ffffff"); domeGrad.addColorStop(1, "rgba(204, 255, 0, " + pulse + ")");
-                context.beginPath(); context.arc(0, 0, 22, 0, 7);
-                context.fillStyle = domeGrad; context.fill();
-                context.shadowBlur = 0; context.beginPath(); context.arc(0, 32, 20, 0, 7);
-                context.strokeStyle = "rgba(255,255,255,0.9)"; context.lineWidth = 6; context.stroke();
-                context.restore();
             }
         }
 
