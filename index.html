@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Pro V50</title>
+    <title>Birth Pulse - Solar System Pro V51</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -27,7 +27,8 @@
             text-transform: uppercase;
         }
         .main-heading {
-            font-size: 2.8vw; color: #a855f7; 
+            font-size: 3.1vw; /* 1.2x bigger */
+            color: #a855f7; 
             font-weight: 800; text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
             white-space: nowrap;
         }
@@ -54,17 +55,6 @@
         .bottom-clock { width: 100%; text-align: center; margin-top: 12px; }
         #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; letter-spacing: 3px; }
 
-        /* 3. BACKGROUND & GLOBE */
-        .stars-container {
-            position: absolute; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none;
-        }
-        .star {
-            position: absolute; background: white; border-radius: 50%;
-            animation: blink var(--t) infinite ease-in-out;
-        }
-        @keyframes blink { 0%, 100% { opacity: 0.1; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.1); } }
-
         .globe-container { position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 5; }
         #main-canvas { width: 100%; height: 100%; }
 
@@ -77,7 +67,7 @@
 </head>
 <body>
 
-    <div id="loading">OPTIMIZING HIGH-SPEED ROTATION...</div>
+    <div id="loading">CONSTRUCTING SOLAR SYSTEM...</div>
     
     <div class="header-box">
         <div id="philips-text" class="philips-text">
@@ -104,8 +94,6 @@
         </div>
     </div>
 
-    <div class="stars-container" id="starfield"></div>
-
     <div class="globe-container">
         <canvas id="main-canvas"></canvas>
     </div>
@@ -113,7 +101,7 @@
     <script>
         // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
-        var AUTO_ROTATION_SPEED = 0.62; // 1.2x Increase (from 0.52)
+        var AUTO_ROTATION_SPEED = 0.55;
         
         var globeThemes = [
             { land: "#4ade80", flash: "#f472b6", ocean: "#0a192f" },
@@ -122,6 +110,17 @@
             { land: "#facc15", flash: "#a855f7", ocean: "#1e0a01" }
         ];
         var currentThemeIdx = 0;
+
+        // PLANET DATA (Mercury to Neptune)
+        var planets = [
+            { name: "Mercury", dist: 120, size: 3, speed: 0.015, color: "#9ca3af", angle: Math.random()*7 },
+            { name: "Venus",   dist: 160, size: 5, speed: 0.011, color: "#fb923c", angle: Math.random()*7 },
+            { name: "Mars",    dist: 220, size: 4, speed: 0.008, color: "#f87171", angle: Math.random()*7 },
+            { name: "Jupiter", dist: 300, size: 10, speed: 0.005, color: "#d1d5db", angle: Math.random()*7 },
+            { name: "Saturn",  dist: 380, size: 8, speed: 0.003, color: "#fde68a", angle: Math.random()*7 },
+            { name: "Uranus",  dist: 450, size: 6, speed: 0.002, color: "#7dd3fc", angle: Math.random()*7 },
+            { name: "Neptune", dist: 520, size: 6, speed: 0.001, color: "#6366f1", angle: Math.random()*7 }
+        ];
         
         var worldData = null, flashingISO = {}, floaters = [], stars = [], comets = [];
         var canvas = document.getElementById("main-canvas");
@@ -134,7 +133,7 @@
         var projection = d3.geoOrthographic().scale(h / 2.8).translate([w * 0.74, h * 0.5]).clipAngle(90);
         var path = d3.geoPath(projection, context);
 
-        // UNIVERSAL INTERACTION (Mouse & Touch)
+        // --- INTERACTION ---
         function handleStart(x, y) { isDragging = true; lastX = x; lastY = y; }
         function handleMove(x, y) { if (isDragging) { rotX += (x - lastX)*0.3; rotY -= (y - lastY)*0.3; lastX = x; lastY = y; } }
         canvas.addEventListener('mousedown', function(e) { handleStart(e.clientX, e.clientY); });
@@ -153,7 +152,9 @@
             }
         }
 
-        for(var i=0; i<80; i++) stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2, t: 2 + Math.random()*3 });
+        // Init Background Stars
+        for(var i=0; i<60; i++) stars.push({ x: Math.random()*w, y: Math.random()*h, sz: Math.random()*2 });
+        // Init Pacifiers
         for(var i=0; i<5; i++) floaters.push({ x: Math.random()*w, y: Math.random()*h, vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15, rot: Math.random()*360, rSpeed: (Math.random()-0.5)*1, phase: Math.random()*5 });
 
         setInterval(function() { currentThemeIdx = (currentThemeIdx + 1) % globeThemes.length; }, 180000);
@@ -173,50 +174,79 @@
             projection.rotate([rotX, rotY]);
             context.clearRect(0, 0, w, h);
 
-            // 1. Stars
-            context.fillStyle = "white";
-            var tNow = Date.now() * 0.001;
-            for(var i=0; i<stars.length; i++) {
-                var s = stars[i]; context.globalAlpha = 0.2 + Math.abs(Math.sin(tNow / s.t)) * 0.6;
-                context.beginPath(); context.arc(s.x, s.y, s.sz, 0, 7); context.fill();
-            }
-            context.globalAlpha = 1;
+            // 1. Draw Solar System Background
+            drawSolarSystem();
 
+            // 2. Stars
+            context.fillStyle = "rgba(255,255,255,0.4)";
+            for(var i=0; i<stars.length; i++) {
+                context.beginPath(); context.arc(stars[i].x, stars[i].y, stars[i].sz, 0, 7); context.fill();
+            }
+
+            // 3. Comets & Pacifiers
             updateComets();
             drawButterflyPacifiers();
 
             var center = projection.translate(), radius = projection.scale(), theme = globeThemes[currentThemeIdx];
 
-            // 2. Globe 3D Ocean
+            // 4. Globe Ocean (3D Shaded)
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#3b82f6"); oceanGrad.addColorStop(0.5, theme.ocean); oceanGrad.addColorStop(1, "#020617");
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; context.fill();
 
-            // 3. World Draw (SMOOTH BATCH RENDERING)
+            // 5. World Draw
             if (worldData) {
                 var now = Date.now();
-                // Draw entire landmass in one path for maximum TV speed
-                context.beginPath();
-                path(worldData);
-                context.fillStyle = theme.land;
-                context.fill();
-                context.strokeStyle = "rgba(255, 255, 255, 0.4)";
-                context.lineWidth = 0.6;
-                context.stroke();
+                context.beginPath(); path(worldData);
+                context.fillStyle = theme.land; context.fill();
+                context.strokeStyle = "rgba(255, 255, 255, 0.4)"; context.lineWidth = 0.6; context.stroke();
 
-                // Draw specific flashing countries on top
                 worldData.features.forEach(function(feature) {
                     var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3 || feature.id;
                     if (flashingISO[iso] && (now - flashingISO[iso] < 1500)) {
                         context.beginPath(); path(feature);
-                        context.fillStyle = theme.flash;
-                        context.fill();
+                        context.fillStyle = theme.flash; context.fill();
                         context.strokeStyle = "white"; context.lineWidth = 1; context.stroke();
                     }
                 });
             }
             requestAnimationFrame(renderLoop);
+        }
+
+        function drawSolarSystem() {
+            var sunX = w * 0.25, sunY = h * 0.5; // Positioning Sun on the left
+            var time = Date.now() * 0.0002;
+
+            // Draw Sun
+            var sunGrad = context.createRadialGradient(sunX, sunY, 10, sunX, sunY, 60);
+            sunGrad.addColorStop(0, "#fffbeb");
+            sunGrad.addColorStop(0.4, "#fbbf24");
+            sunGrad.addColorStop(1, "transparent");
+            
+            context.save();
+            context.shadowBlur = 50; context.shadowColor = "#f59e0b";
+            context.beginPath(); context.arc(sunX, sunY, 50, 0, 7);
+            context.fillStyle = sunGrad; context.fill();
+            context.restore();
+
+            // Draw Planets
+            for(var i=0; i<planets.length; i++) {
+                var p = planets[i];
+                p.angle += p.speed * 0.5;
+                var px = sunX + Math.cos(p.angle) * p.dist;
+                var py = sunY + Math.sin(p.angle) * p.dist * 0.6; // Elliptical orbit
+
+                // Orbit path
+                context.beginPath(); context.ellipse(sunX, sunY, p.dist, p.dist * 0.6, 0, 0, 7);
+                context.strokeStyle = "rgba(255,255,255,0.05)"; context.lineWidth = 1; context.stroke();
+
+                // Planet
+                context.beginPath(); context.arc(px, py, p.size, 0, 7);
+                context.fillStyle = p.color; context.fill();
+                context.shadowBlur = 10; context.shadowColor = p.color; context.fill();
+                context.shadowBlur = 0;
+            }
         }
 
         function drawButterflyPacifiers() {
