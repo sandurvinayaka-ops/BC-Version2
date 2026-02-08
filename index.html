@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Pro V61</title>
+    <title>Birth Pulse - Cinematic TV Pro V63</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -14,7 +14,7 @@
             cursor: grab; touch-action: none;
         }
 
-        /* 1. CSS STARS (Zero CPU Load) */
+        /* 1. CSS STARS (Hardware Accelerated) */
         .stars-container {
             position: absolute; width: 100%; height: 100%;
             z-index: 1; pointer-events: none;
@@ -23,9 +23,9 @@
             position: absolute; background: white; border-radius: 50%;
             animation: blink var(--t) infinite ease-in-out;
         }
-        @keyframes blink { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.7; } }
+        @keyframes blink { 0%, 100% { opacity: 0.1; transform: scale(0.8); } 50% { opacity: 0.7; transform: scale(1.1); } }
 
-        /* 2. UI LAYOUT */
+        /* 2. TOP-LEFT HEADER */
         .header-box {
             position: absolute; top: 5vh; left: 5vw;
             z-index: 500; text-align: left;
@@ -33,7 +33,7 @@
         .philips-text { display: flex; margin-bottom: 5px; }
         .philips-text span {
             font-size: 2.2vw; font-weight: 900; letter-spacing: 0.3vw;
-            transition: color 1s ease; text-transform: uppercase;
+            transition: color 1.2s ease; text-transform: uppercase;
         }
         .main-heading {
             font-size: 3.1vw; color: #a855f7; 
@@ -41,6 +41,7 @@
             white-space: nowrap;
         }
 
+        /* 3. BOTTOM-LEFT STATS */
         .stats-box { 
             position: absolute; bottom: 8vh; left: 5vw; 
             width: 38vw; z-index: 100; text-align: left;
@@ -52,15 +53,16 @@
             text-shadow: 0 0 25px rgba(250, 204, 21, 0.3);
         }
 
-        .progress-container { width: 90%; margin-top: 10px; }
-        .progress-markers { display: flex; justify-content: space-between; width: 100%; margin-bottom: 4px; }
-        .marker-text { color: #38bdf8; font-size: 1vw; font-weight: bold; opacity: 0.8; }
+        /* PROGRESS BAR WITH TIME LABELS */
+        .progress-ui { width: 90%; margin-top: 15px; }
+        .time-labels { display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px; }
+        .time-labels span { color: #38bdf8; font-size: 1.1vw; font-weight: bold; opacity: 0.8; }
         
-        .bar-wrapper { width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; }
+        .bar-wrapper { width: 100%; height: 14px; background: rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; }
         .bar-fill { height: 100%; width: 0%; background: #fbbf24; box-shadow: 0 0 10px #fbbf24; }
         #clock { color: #fbbf24; font-size: 1.8vw; font-weight: bold; display: block; text-align: center; margin-top: 12px; letter-spacing: 2px;}
 
-        /* 3. HARDWARE ACCELERATED CANVAS */
+        /* 4. CANVAS CONTAINER */
         .canvas-container { position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 5; }
         #main-canvas { width: 100%; height: 100%; }
 
@@ -85,10 +87,10 @@
     <div class="stats-box">
         <span class="label">Global Birth Count Today</span>
         <div id="birthCount" class="count">0</div>
-        <div class="progress-container">
-            <div class="progress-markers">
-                <span class="marker-text">00:00</span>
-                <span class="marker-text">24:00</span>
+        <div class="progress-ui">
+            <div class="time-labels">
+                <span>00:00</span>
+                <span>24:00</span>
             </div>
             <div class="bar-wrapper"><div id="bar" class="bar-fill"></div></div>
             <span id="clock">00:00:00</span>
@@ -101,39 +103,33 @@
     <script>
         // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
-        var SPEED_FACTOR = 0.008; // Buttery smooth slow-mo
+        var EARTH_ROT_SPD = 0.008; // majestic slow majestic rotation
+        var SYSTEM_ORBIT_SPD = 0.00004; 
         
         var globeThemes = [
-            { land: "#10b981", flash: "#ffffff", ocean: "#0a192f" }, // Emerald -> White
-            { land: "#f43f5e", flash: "#22d3ee", ocean: "#1e0108" }, // Rose -> Cyan
-            { land: "#0ea5e9", flash: "#fbbf24", ocean: "#082f49" }, // Blue -> Gold
-            { land: "#eab308", flash: "#a855f7", ocean: "#1e0a01" }  // Gold -> Purple
+            { land: "#10b981", flash: "#ffffff", ocean: "#0a192f" },
+            { land: "#f43f5e", flash: "#22d3ee", ocean: "#1e0108" },
+            { land: "#0ea5e9", flash: "#fbbf24", ocean: "#082f49" },
+            { land: "#eab308", flash: "#a855f7", ocean: "#1e0a01" }
         ];
         var currentThemeIdx = 0;
 
-        // Relative planets orbiting the Sun
         var planets = [
-            { dist: 80, sz: 2.5, spd: 0.015, col: "#9ca3af", ang: Math.random()*7 },
-            { dist: 110, sz: 4.5, spd: 0.010, col: "#E3BB76", ang: Math.random()*7 },
-            { dist: 150, sz: 3.5, spd: 0.007, col: "#EF4444", ang: Math.random()*7 },
-            { dist: 200, sz: 8.0, spd: 0.004, col: "#D39C7E", ang: Math.random()*7 }
+            { dist: 85, sz: 2.8, spd: 0.0012, col: "#9ca3af", ang: Math.random()*7 },
+            { dist: 120, sz: 5.0, spd: 0.0008, col: "#E3BB76", ang: Math.random()*7 },
+            { dist: 160, sz: 4.0, spd: 0.0006, col: "#EF4444", ang: Math.random()*7 },
+            { dist: 220, sz: 9.0, spd: 0.0003, col: "#D39C7E", ang: Math.random()*7 }
         ];
         
-        var worldGeo = null;
-        var featureIndex = {}; 
-        var flashingISO = {}; 
+        var worldGeo = null, featureIndex = {}, flashingISO = {}; 
         var canvas = document.getElementById("main-canvas");
         var context = canvas.getContext("2d");
         var w, h, isDragging = false, lastX, lastY, rotX = 0, rotY = -15;
-        var lastFrameT = performance.now();
+        var lastFrameT = Date.now();
 
-        function setSizes() { 
-            w = window.innerWidth; h = window.innerHeight; 
-            canvas.width = w; canvas.height = h; 
-        }
+        function setSizes() { w = window.innerWidth; h = window.innerHeight; canvas.width = w; canvas.height = h; }
         setSizes();
 
-        // Earth locked at 74% Width
         var projection = d3.geoOrthographic().scale(h / 2.8).translate([w * 0.74, h * 0.5]).clipAngle(90);
         var path = d3.geoPath(projection, context);
 
@@ -171,33 +167,34 @@
             });
         }
 
-        function renderLoop(time) {
-            var dt = time - lastFrameT;
-            lastFrameT = time;
+        function renderLoop() {
+            var now = Date.now();
+            var dt = now - lastFrameT;
+            lastFrameT = now;
 
-            if (!isDragging) rotX += SPEED_FACTOR * dt;
+            // DELTA-TIME ROTATION (Guarantees smoothness regardless of CPU speed)
+            if (!isDragging) rotX += EARTH_ROT_SPD * dt;
             projection.rotate([rotX, rotY]);
-            
             context.clearRect(0, 0, w, h);
 
-            // 1. Draw Orbiting Solar System around Earth center
-            drawOrbitingSolarSystem(time);
+            // 1. Draw Orbiting Solar System
+            drawSolarSystem(now, dt);
 
             var center = projection.translate(), radius = projection.scale(), theme = globeThemes[currentThemeIdx];
 
-            // 2. Earth Ocean (3D Shaded)
+            // 2. Earth Ocean (3D Gradient)
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#3b82f6"); oceanGrad.addColorStop(0.5, theme.ocean); oceanGrad.addColorStop(1, "#02040a");
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; context.fill();
 
-            // 3. World (Batched)
+            // 3. Batched World Draw
             if (worldGeo) {
                 context.beginPath(); path(worldGeo); 
                 context.fillStyle = theme.land; context.fill();
-                context.strokeStyle = "rgba(255, 255, 255, 0.35)"; context.lineWidth = 0.6; context.stroke();
+                context.strokeStyle = "rgba(255, 255, 255, 0.3)"; context.lineWidth = 0.6; context.stroke();
 
-                // 4. Contrast Flashes
+                // 4. Country Flashes
                 for (var iso in flashingISO) {
                     if (Date.now() - flashingISO[iso] < 1500) {
                         var feat = featureIndex[iso];
@@ -212,35 +209,28 @@
             requestAnimationFrame(renderLoop);
         }
 
-        function drawOrbitingSolarSystem(t) {
+        function drawSolarSystem(t, dt) {
             var earthX = w * 0.74, earthY = h * 0.5;
-            
-            // The Sun orbits the Earth center in a wide elliptical path
-            var sunOrbitX = w * 0.5;
-            var sunOrbitY = h * 0.4;
-            var sunAngle = t * 0.0001;
-            
-            var sx = earthX + Math.cos(sunAngle) * sunOrbitX;
-            var sy = earthY + Math.sin(sunAngle) * sunOrbitY;
+            var sunAngle = t * SYSTEM_ORBIT_SPD;
+            var sx = earthX + Math.cos(sunAngle) * (w * 0.5);
+            var sy = earthY + Math.sin(sunAngle) * (h * 0.4);
 
-            // SUN
+            // Burning Sun
             var sGrad = context.createRadialGradient(sx, sy, 0, sx, sy, 60);
             sGrad.addColorStop(0, "#ffffff"); sGrad.addColorStop(0.4, "#fbbf24"); sGrad.addColorStop(1, "transparent");
             context.beginPath(); context.arc(sx, sy, 60, 0, 7);
             context.fillStyle = sGrad; context.fill();
 
-            // PLANETS Orbiting the Sun
+            // Planets
             for(var i=0; i<planets.length; i++) {
                 var p = planets[i];
-                var pAngle = (t * 0.001 * p.spd) + p.ang;
-                var px = sx + Math.cos(pAngle) * p.dist;
-                var py = sy + Math.sin(pAngle) * p.dist * 0.7;
-
-                // Planet Body
+                p.ang += p.spd * dt * 0.15; 
+                var px = sx + Math.cos(p.ang) * p.dist;
+                var py = sy + Math.sin(p.ang) * p.dist * 0.65;
                 context.beginPath(); context.arc(px, py, p.sz, 0, 7);
                 context.fillStyle = p.col; context.fill();
 
-                // Realistic Shading relative to Sun position
+                // Realistic Shading
                 var angle = Math.atan2(py - sy, px - sx);
                 var shad = context.createRadialGradient(px + Math.cos(angle)*p.sz*0.3, py + Math.sin(angle)*p.sz*0.3, 0, px, py, p.sz);
                 shad.addColorStop(0, "rgba(0,0,0,0)"); shad.addColorStop(1, "rgba(0,0,0,0.85)");
@@ -265,10 +255,11 @@
             }, 1000 / BIRTH_RATE);
         }
 
+        // Init CSS Stars
         var field = document.getElementById('starfield');
-        for (var i = 0; i < 75; i++) {
+        for (var i = 0; i < 70; i++) {
             var s = document.createElement('div'); s.className = 'star';
-            s.style.width = s.style.height = (1 + Math.random() * 2) + 'px';
+            s.style.width = s.style.height = (1 + Math.random() * 2.2) + 'px';
             s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%';
             s.style.setProperty('--t', (2 + Math.random() * 3) + 's');
             field.appendChild(s);
