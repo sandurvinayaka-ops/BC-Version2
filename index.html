@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birth Pulse - Cinematic TV Pro V49</title>
+    <title>Birth Pulse - Cinematic TV Pro V50</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -17,44 +17,27 @@
 
         /* 1. TOP-LEFT HEADER BOX */
         .header-box {
-            position: absolute;
-            top: 5vh;
-            left: 5vw;
-            z-index: 500;
-            pointer-events: auto;
-            text-align: left;
+            position: absolute; top: 5vh; left: 5vw;
+            z-index: 500; pointer-events: auto; text-align: left;
         }
-
-        .philips-text {
-            display: flex;
-            margin-bottom: 5px;
-        }
+        .philips-text { display: flex; margin-bottom: 5px; }
         .philips-text span {
-            font-size: 2.2vw;
-            font-weight: 900;
-            letter-spacing: 0.3vw;
+            font-size: 2.2vw; font-weight: 900; letter-spacing: 0.3vw;
             transition: color 0.8s ease, text-shadow 0.8s ease;
             text-transform: uppercase;
         }
-
         .main-heading {
-            font-size: 2.8vw; color: #a855f7; /* Purple */
+            font-size: 2.8vw; color: #a855f7; 
             font-weight: 800; text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
             white-space: nowrap;
         }
 
         /* 2. CENTRE-LEFT STATS PANEL */
         .stats-box { 
-            position: absolute;
-            top: 55%; 
-            left: 5vw; 
-            transform: translateY(-50%);
-            width: 38vw; 
-            z-index: 100;
-            pointer-events: auto;
-            text-align: left;
+            position: absolute; top: 55%; left: 5vw; 
+            transform: translateY(-50%); width: 38vw; z-index: 100;
+            pointer-events: auto; text-align: left;
         }
-
         .label { font-size: 1.2vw; color: #38bdf8; text-transform: uppercase; font-weight: 900; letter-spacing: 3px; }
         .count {
             font-size: 8.5vw; font-weight: 900; color: #fbbf24;
@@ -62,7 +45,7 @@
             text-shadow: 0 0 30px rgba(250, 204, 21, 0.4);
         }
 
-        /* PROGRESS BAR ASSEMBLY */
+        /* PROGRESS BAR */
         .progress-container { width: 35vw; margin-top: 15px; }
         .top-labels { display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px; }
         .limit-text { color: #38bdf8; font-size: 1.1vw; font-weight: bold; opacity: 0.8; }
@@ -94,9 +77,8 @@
 </head>
 <body>
 
-    <div id="loading">POSITIONING CINEMATIC ELEMENTS...</div>
+    <div id="loading">OPTIMIZING HIGH-SPEED ROTATION...</div>
     
-    <!-- HEADER AT TOP -->
     <div class="header-box">
         <div id="philips-text" class="philips-text">
             <span>P</span><span>H</span><span>I</span><span>L</span><span>I</span><span>P</span><span>S</span>
@@ -104,7 +86,6 @@
         <h1 class="main-heading">Mother & Child Care-Women's Health</h1>
     </div>
 
-    <!-- STATS AT CENTER LEFT -->
     <div class="stats-box">
         <span class="label">Global Birth Count Today</span>
         <div id="birthCount" class="count">0</div>
@@ -132,7 +113,7 @@
     <script>
         // TV-SAFE ES5 SCRIPT
         var BIRTH_RATE = 4.34;
-        var AUTO_ROTATION_SPEED = 0.52; 
+        var AUTO_ROTATION_SPEED = 0.62; // 1.2x Increase (from 0.52)
         
         var globeThemes = [
             { land: "#4ade80", flash: "#f472b6", ocean: "#0a192f" },
@@ -153,26 +134,22 @@
         var projection = d3.geoOrthographic().scale(h / 2.8).translate([w * 0.74, h * 0.5]).clipAngle(90);
         var path = d3.geoPath(projection, context);
 
-        // Interaction
-        function startDrag(x, y) { isDragging = true; lastX = x; lastY = y; }
-        function moveDrag(x, y) { if (isDragging) { rotX += (x - lastX)*0.3; rotY -= (y - lastY)*0.3; lastX = x; lastY = y; } }
-        canvas.addEventListener('mousedown', function(e) { startDrag(e.clientX, e.clientY); });
-        window.addEventListener('mousemove', function(e) { moveDrag(e.clientX, e.clientY); });
+        // UNIVERSAL INTERACTION (Mouse & Touch)
+        function handleStart(x, y) { isDragging = true; lastX = x; lastY = y; }
+        function handleMove(x, y) { if (isDragging) { rotX += (x - lastX)*0.3; rotY -= (y - lastY)*0.3; lastX = x; lastY = y; } }
+        canvas.addEventListener('mousedown', function(e) { handleStart(e.clientX, e.clientY); });
+        window.addEventListener('mousemove', function(e) { handleMove(e.clientX, e.clientY); });
         window.addEventListener('mouseup', function() { isDragging = false; });
-        canvas.addEventListener('touchstart', function(e) { e.preventDefault(); if(e.touches.length > 0) startDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
-        window.addEventListener('touchmove', function(e) { e.preventDefault(); if(e.touches.length > 0) moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+        canvas.addEventListener('touchstart', function(e) { e.preventDefault(); if(e.touches.length > 0) handleStart(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+        window.addEventListener('touchmove', function(e) { e.preventDefault(); if(e.touches.length > 0) handleMove(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
         window.addEventListener('touchend', function() { isDragging = false; });
 
-        // Philips Color Animation
         function updatePhilipsColors() {
             var spans = document.querySelectorAll('#philips-text span');
             for(var i=0; i<spans.length; i++) {
-                var r = Math.floor(Math.random() * 155) + 100;
-                var g = Math.floor(Math.random() * 155) + 100;
-                var b = Math.floor(Math.random() * 155) + 100;
-                var col = 'rgb(' + r + ',' + g + ',' + b + ')';
-                spans[i].style.color = col;
-                spans[i].style.textShadow = '0 0 15px ' + col;
+                var r = Math.floor(Math.random()*155)+100, g = Math.floor(Math.random()*155)+100, b = Math.floor(Math.random()*155)+100;
+                var col = 'rgb('+r+','+g+','+b+')';
+                spans[i].style.color = col; spans[i].style.textShadow = '0 0 15px '+col;
             }
         }
 
@@ -196,7 +173,7 @@
             projection.rotate([rotX, rotY]);
             context.clearRect(0, 0, w, h);
 
-            // Stars
+            // 1. Stars
             context.fillStyle = "white";
             var tNow = Date.now() * 0.001;
             for(var i=0; i<stars.length; i++) {
@@ -208,28 +185,27 @@
             updateComets();
             drawButterflyPacifiers();
 
-            var center = projection.translate();
-            var radius = projection.scale();
-            var theme = globeThemes[currentThemeIdx];
+            var center = projection.translate(), radius = projection.scale(), theme = globeThemes[currentThemeIdx];
 
-            // Globe Glow
-            var glow = context.createRadialGradient(center[0], center[1], radius, center[0], center[1], radius + 50);
-            glow.addColorStop(0, "rgba(56, 189, 248, 0.2)"); glow.addColorStop(1, "transparent");
-            context.beginPath(); context.arc(center[0], center[1], radius + 50, 0, 7);
-            context.fillStyle = glow; context.fill();
-
-            // Ocean
+            // 2. Globe 3D Ocean
             var oceanGrad = context.createRadialGradient(center[0]-radius/2.5, center[1]-radius/2.5, radius/20, center[0], center[1], radius);
             oceanGrad.addColorStop(0, "#3b82f6"); oceanGrad.addColorStop(0.5, theme.ocean); oceanGrad.addColorStop(1, "#020617");
             context.beginPath(); context.arc(center[0], center[1], radius, 0, 7);
             context.fillStyle = oceanGrad; context.fill();
 
+            // 3. World Draw (SMOOTH BATCH RENDERING)
             if (worldData) {
                 var now = Date.now();
-                context.beginPath(); path(worldData);
-                context.fillStyle = theme.land; context.fill();
-                context.strokeStyle = "rgba(255, 255, 255, 0.4)"; context.lineWidth = 0.6; context.stroke();
+                // Draw entire landmass in one path for maximum TV speed
+                context.beginPath();
+                path(worldData);
+                context.fillStyle = theme.land;
+                context.fill();
+                context.strokeStyle = "rgba(255, 255, 255, 0.4)";
+                context.lineWidth = 0.6;
+                context.stroke();
 
+                // Draw specific flashing countries on top
                 worldData.features.forEach(function(feature) {
                     var iso = feature.properties.ISO_A3 || feature.properties.ADM0_A3 || feature.id;
                     if (flashingISO[iso] && (now - flashingISO[iso] < 1500)) {
@@ -244,8 +220,7 @@
         }
 
         function drawButterflyPacifiers() {
-            var time = Date.now() * 0.001;
-            var pulse = 0.6 + Math.sin(time * 3) * 0.4;
+            var time = Date.now() * 0.001, pulse = 0.6 + Math.sin(time * 3) * 0.4;
             for (var i = 0; i < floaters.length; i++) {
                 var f = floaters[i];
                 f.x += f.vx; f.y += f.vy; f.rot += f.rSpeed;
@@ -289,10 +264,8 @@
 
         function startSimulation() {
             setInterval(function() {
-                var now = new Date();
-                var start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                var elapsed = (Date.now() - start) / 1000;
-                var total = Math.floor(elapsed * BIRTH_RATE);
+                var now = new Date(), start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                var elapsed = (Date.now() - start) / 1000, total = Math.floor(elapsed * BIRTH_RATE);
                 document.getElementById('birthCount').innerText = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
                 document.getElementById('bar').style.width = (elapsed / 86400 * 100) + "%";
